@@ -23,6 +23,8 @@ mkdir -p /root/routepay
 cd /root/routepay
 # Keep a backup of the previous sources (env files excluded from the tarball, so they survive).
 if [ -d backend ]; then tar -czf "/root/routepay-prev-$STAMP.tgz" --exclude=node_modules --exclude=.next backend frontend 2>/dev/null || true; fi
+# Three backups are enough: older ones only fill the disk.
+ls -t /root/routepay-prev-*.tgz 2>/dev/null | tail -n +4 | xargs -r rm -f
 # Clear the source folders first: unpacking over them would keep every file that
 # was deleted from the repo. The env files and node_modules live outside of them.
 rm -rf backend/src backend/scripts frontend/app frontend/components frontend/lib frontend/public frontend/scripts contracts deploy

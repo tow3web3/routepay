@@ -21,7 +21,8 @@ function sources(platform, handle, stored) {
   const h = encodeURIComponent(handle);
   const list = [stored];
   if (platform === 'github') list.push(`https://github.com/${h}.png?size=160`);
-  if (platform === 'domain') list.push(`https://icons.duckduckgo.com/ip3/${h}.ico`, `https://www.google.com/s2/favicons?domain=${h}&sz=128`);
+  // Google first: it serves the large icon of a site when there is one (128 px against 32 to 48).
+  if (platform === 'domain') list.push(`https://www.google.com/s2/favicons?domain=${h}&sz=128`, `https://icons.duckduckgo.com/ip3/${h}.ico`);
   if (platform !== 'domain') list.push(`https://unavatar.io/${platform}/${encodeURIComponent(handle.replace(/^@/, ''))}?fallback=false`);
   return list.filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
 }

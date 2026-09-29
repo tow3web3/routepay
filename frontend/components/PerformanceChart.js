@@ -43,15 +43,15 @@ export default function PerformanceChart({ data }) {
         <AreaChart data={chartData} margin={{ top: 8, right: 22, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorEth" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#19D13B" stopOpacity={0.16} />
-              <stop offset="100%" stopColor="#19D13B" stopOpacity={0} />
+              <stop offset="0%" stopColor="#C8FD3B" stopOpacity={0.16} />
+              <stop offset="100%" stopColor="#C8FD3B" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="#24272B" strokeWidth={1} />
           <XAxis dataKey="time" tick={TICK} ticks={dayTicks} tickFormatter={(v) => dayOf[v] || v} tickLine={false} axisLine={{ stroke: '#24272B' }} tickMargin={10} minTickGap={40} />
           <YAxis tick={TICK} tickLine={false} axisLine={false} width={46} tickMargin={6} tickCount={5} tickFormatter={(v) => v.toFixed(decimals)} />
           <Tooltip content={<Tip />} cursor={{ stroke: '#F4F5F4', strokeOpacity: 0.25, strokeWidth: 1 }} isAnimationActive={false} offset={14} />
-          <Area type="monotone" dataKey="eth" stroke="#19D13B" strokeWidth={1.75} fillOpacity={1} fill="url(#colorEth)" dot={false} activeDot={{ r: 3.5, fill: '#19D13B', stroke: '#0A0A0A', strokeWidth: 2 }} animationDuration={900} animationEasing="ease-out" />
+          <Area type="monotone" dataKey="eth" stroke="#C8FD3B" strokeWidth={1.75} fillOpacity={1} fill="url(#colorEth)" dot={false} activeDot={{ r: 3.5, fill: '#C8FD3B', stroke: '#0A0A0A', strokeWidth: 2 }} animationDuration={900} animationEasing="ease-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

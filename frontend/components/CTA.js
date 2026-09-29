@@ -8,7 +8,7 @@ import { PLATFORM_KEYS } from '../lib/pages';
 import { STOCKS, getStock } from '../lib/stocks';
 
 const ROUTES = [
-  ['Holders', '#19D13B'],
+  ['Holders', '#C8FD3B'],
   ['Wallets', '#F4F5F4'],
   ['Buyback', '#FF7A1A'],
   ['Treasury', '#F6C343'],

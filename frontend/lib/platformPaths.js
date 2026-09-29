@@ -20,6 +20,6 @@ export const PLATFORM_COLORS = {
   facebook: ['#0866FF', '#FFFFFF'],
   tiktok: ['#000000', '#FFFFFF'],
   twitch: ['#9146FF', '#FFFFFF'],
-  domain: ['#19D13B', '#0A0A0A'],
+  domain: ['#C8FD3B', '#0A0A0A'],
 };
 export const INSTAGRAM_GRADIENT = 'radial-gradient(circle at 30% 107%, #FDF497 0%, #FDF497 5%, #FD5949 45%, #D6249F 60%, #285AEB 90%)';

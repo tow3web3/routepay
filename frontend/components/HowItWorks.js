@@ -9,7 +9,7 @@ import { getStock } from '../lib/stocks';
 const D = 'var(--font-display), var(--font-sans), system-ui, sans-serif';
 const F = 'var(--font-sans), system-ui, sans-serif';
 const M = 'var(--font-mono), ui-monospace, monospace';
-const GREEN = '#19D13B', MINT = '#45DB62', INK = '#F4F5F4', MUT = '#8A9099', LINE = '#2A2E33', PAPER = '#101112', DEEP = '#1D5229', GOLD = '#F6C343';
+const GREEN = '#C8FD3B', MINT = '#C4F54A', INK = '#F4F5F4', MUT = '#8A9099', LINE = '#2A2E33', PAPER = '#101112', DEEP = '#405819', GOLD = '#F6C343';
 
 // The map is 1056 wide. Each stop owns a stretch of it.
 const ZONES = [{ x: 0, y: 68, w: 276, h: 204 }, { x: 276, y: 14, w: 368, h: 292 }, { x: 636, y: 14, w: 420, h: 292 }];
@@ -106,7 +106,7 @@ function RouteMap({ zone = null, className = '' }) {
       {/* 03: the destinations */}
       {ROUTES.map((r) => (
         <g key={r.name}>
-          <rect x="644.5" y={r.y - 22.5} width="388" height="45" rx="5" fill={r.page ? 'rgba(25,209,59,0.05)' : PAPER} stroke={r.page ? DEEP : LINE} />
+          <rect x="644.5" y={r.y - 22.5} width="388" height="45" rx="5" fill={r.page ? 'rgba(200, 253, 59,0.05)' : PAPER} stroke={r.page ? DEEP : LINE} />
           <Disc clip={clip} x={669} y={r.y} r={12} href={r.logo} stock={r.stock} />
           <text x="690" y={r.y - 2} fill={INK} fontSize={r.page ? 11 : 12} fontWeight={r.page ? 400 : 600} fontFamily={r.page ? M : F}>{r.name}</text>
           <text x="690" y={r.y + 12} fill={MUT} fontSize="8.5" fontFamily={M}>{r.sub}</text>

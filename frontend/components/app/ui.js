@@ -120,11 +120,11 @@ export function Button({ children, variant = 'primary', busy, className = '', ..
 }
 
 // The colour names the sliders used to take, as the colours they stood for.
-const SLIDER_TONES = { 'accent-hood-500': '#19D13B', 'accent-ink': '#F4F5F4', 'accent-orange-500': '#FF7A1A', 'accent-gold-400': '#F6C343' };
+const SLIDER_TONES = { 'accent-hood-500': '#C8FD3B', 'accent-ink': '#F4F5F4', 'accent-orange-500': '#FF7A1A', 'accent-gold-400': '#F6C343' };
 const thumbCls = '[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-[7px] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-[2px] [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-ground [&::-webkit-slider-thumb]:bg-ink [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-[7px] [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:rounded-[2px] [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-ground [&::-moz-range-thumb]:bg-ink [&::-moz-range-track]:bg-transparent focus-visible:[&::-webkit-slider-thumb]:bg-hood-500 focus-visible:[&::-moz-range-thumb]:bg-hood-500';
 
 /** Slider on a ruler: a hairline track filled up to the value, ten ticks under it, the value in mono. */
-export function Slider({ label, value, min = 0, max = 100, step = 1, onChange, format = (v) => `${v}%`, color = '#19D13B', icon: Icon }) {
+export function Slider({ label, value, min = 0, max = 100, step = 1, onChange, format = (v) => `${v}%`, color = '#C8FD3B', icon: Icon }) {
   const tone = SLIDER_TONES[color] || color;
   const at = max > min ? Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100)) : 0;
   return (

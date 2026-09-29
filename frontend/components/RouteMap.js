@@ -13,7 +13,7 @@ import { getStock } from '../lib/stocks';
 const ROW = 52;
 const GAP = 6;
 const ROUTES = [
-  { share: 40, title: 'Holders', sub: 'paid in NVDA, by balance', color: '#19D13B', stock: 'NVDA' },
+  { share: 40, title: 'Holders', sub: 'paid in NVDA, by balance', color: '#C8FD3B', stock: 'NVDA' },
   { share: 25, title: '@yourchannel', sub: 'YouTube · held in its vault', color: '#5B9DFF', platform: 'youtube' },
   { share: 10, title: 'your-project', sub: 'GitHub · claimed, paid direct', color: '#5B9DFF', platform: 'github' },
   { share: 5, title: 'yoursite.com', sub: 'Domain · held in its vault', color: '#5B9DFF', platform: 'domain' },

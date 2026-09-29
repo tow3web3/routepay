@@ -10,7 +10,7 @@
 A share to holders, paid in kind. A share to wallets. Buybacks. A stock treasury with a published book value. And a share to any page on the internet: a YouTube channel, a GitHub account, a domain, an X, Instagram, TikTok or Twitch account, a Facebook page. Draw the routing on one screen, each leg with its own share and payout asset. Telegram is the remote; your community watches it happen on a live public dashboard.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Robinhood Chain](https://img.shields.io/badge/Robinhood%20Chain-4663-19D13B)](https://robinhoodchain.blockscout.com)
+[![Robinhood Chain](https://img.shields.io/badge/Robinhood%20Chain-4663-C8FD3B)](https://robinhoodchain.blockscout.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 

@@ -30,7 +30,7 @@ const MODE = {
   vote: { label: 'Community Vote', Icon: Vote },
 };
 const KIND = {
-  holders: { label: 'Holders', color: '#19D13B' },
+  holders: { label: 'Holders', color: '#C8FD3B' },
   wallet: { label: 'Wallet', color: '#F4F5F4' },
   burn: { label: 'Buyback and burn', color: '#FF7A1A' },
   treasury: { label: 'Treasury', color: '#F6C343' },

@@ -25,7 +25,7 @@ import { BRAND, BOT_USERNAME } from '../../lib/brand';
 
 // A kind of destination is told by its icon and its colour, on the node, on its edge and in the inspector.
 const KIND = {
-  holders: { label: 'Holders', icon: Users, color: '#19D13B', text: 'text-hood-600', hint: 'The dividend. Weighted by balance and loyalty.' },
+  holders: { label: 'Holders', icon: Users, color: '#C8FD3B', text: 'text-hood-600', hint: 'The dividend. Weighted by balance and loyalty.' },
   page: { label: 'Page', icon: World, color: '#5B9DFF', text: 'text-[#8DBBFF]', hint: 'A YouTube channel, a GitHub account, a domain, any page. Its owner claims by signing in.' },
   wallet: { label: 'Wallet', icon: Wallet, color: '#F4F5F4', text: 'text-ink', hint: 'Any address: you, a partner, marketing, a DAO.' },
   burn: { label: 'Buyback & burn', icon: Burn, color: '#FF7A1A', text: 'text-orange-700', hint: 'Buys your own token on Uniswap and burns it.' },
@@ -211,7 +211,7 @@ function ActionNode({ data }) {
     </div>
   );
   return (
-    <div className={`frame w-[250px] border-dashed shadow-soft transition-colors ${marks} ${selected ? 'border-ink' : bound ? 'border-hood-300' : ''}`} style={{ '--k': bound ? '#19D13B' : '#8A9099' }}>
+    <div className={`frame w-[250px] border-dashed shadow-soft transition-colors ${marks} ${selected ? 'border-ink' : bound ? 'border-hood-300' : ''}`} style={{ '--k': bound ? '#C8FD3B' : '#8A9099' }}>
       <Handle type="target" position={Position.Left} className="!h-2.5 !w-2.5 !rounded-[3px] !border !border-ground !bg-mut" />
       <div className="flex items-start gap-2.5 px-3.5 pb-2.5 pt-3">
         <Telegram className="h-7 w-7 shrink-0 text-[#2AABEE]" />

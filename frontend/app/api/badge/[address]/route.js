@@ -48,11 +48,11 @@ export async function GET(request, { params }) {
     const y = await tokenYield(address, meta[address.toLowerCase()]?.marketCap ?? null);
     if (style === 'reward') {
       const sym = meta[data.config.target_token_address]?.symbol || 'stocks';
-      return new Response(badge('dividends in', sym, '#19D13B'), { headers });
+      return new Response(badge('dividends in', sym, '#C8FD3B'), { headers });
     }
     const apy = fmtApy(y.apy);
     if (!apy) return new Response(badge('dividend yield', y.cycles30d > 0 ? `${y.eth30d.toFixed(3)} ETH / 30d` : 'starting', '#F6C343'), { headers });
-    return new Response(badge('dividend yield', `${apy} APY`, '#19D13B'), { headers });
+    return new Response(badge('dividend yield', `${apy} APY`, '#C8FD3B'), { headers });
   } catch (e) {
     return new Response(badge('routepay', 'unavailable', '#8A9099'), { status: 500, headers });
   }

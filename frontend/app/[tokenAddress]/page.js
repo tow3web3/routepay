@@ -49,7 +49,7 @@ const MODE = {
 
 // The colour of each kind of route, the same ones the diagram draws its flows in.
 const KIND = {
-  holders: { label: 'Holders', color: '#19D13B', Icon: Users },
+  holders: { label: 'Holders', color: '#C8FD3B', Icon: Users },
   wallet: { label: 'Wallet', color: '#F4F5F4', Icon: Wallet },
   burn: { label: 'Buyback and burn', color: '#FF7A1A', Icon: Burn },
   treasury: { label: 'Treasury', color: '#F6C343', Icon: Vault },

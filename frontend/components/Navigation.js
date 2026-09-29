@@ -34,8 +34,8 @@ export default function Navigation() {
 
   return (
     <nav className="sticky top-0 z-40 border-b border-line bg-ground/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-5">
-        <Link href="/" className="flex shrink-0 items-center" aria-label={`${BRAND} home`}><Logo mark="h-7 w-7" /></Link>
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
+        <Link href="/" className="flex shrink-0 items-center" aria-label={`${BRAND} home`}><Logo mark="h-11 w-11" text="text-xl" /></Link>
 
         <div className="hidden items-center gap-0.5 md:flex">
           {MAIN.map(([label, href]) => <Link key={href} href={href} className={link}>{label}</Link>)}

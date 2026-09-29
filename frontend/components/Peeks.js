@@ -35,7 +35,7 @@ function Pons({ size = 'h-6 w-6' }) {
 
 /* ---------------- 1. the canvas ---------------- */
 const LEGS = [
-  { name: 'Holders', sub: 'every $PONS holder', pct: 60, color: '#19D13B', Icon: Users, asset: NVDA, sym: 'NVDA' },
+  { name: 'Holders', sub: 'every $PONS holder', pct: 60, color: '#C8FD3B', Icon: Users, asset: NVDA, sym: 'NVDA' },
   { name: 'You', sub: '0x8a2f…41c9', pct: 20, color: '#F4F5F4', Icon: Wallet, sym: 'in kind' },
   { name: 'Treasury', sub: 'retained in stocks', pct: 10, color: '#F6C343', Icon: Bank, asset: SPY, sym: 'SPY' },
   { name: '@yourchannel', sub: 'held in its vault', pct: 10, color: '#5B9DFF', platform: 'youtube', asset: null, sym: 'ETH' },
@@ -112,7 +112,7 @@ function PolicyScene({ still }) {
   }, [still]);
   const p = PRESETS[k];
   const rows = [
-    { l: 'Holders', v: p.h, c: '#19D13B', logo: <StockLogo address={NVDA} size="h-4 w-4" text="text-[5px]" />, sym: 'NVDA' },
+    { l: 'Holders', v: p.h, c: '#C8FD3B', logo: <StockLogo address={NVDA} size="h-4 w-4" text="text-[5px]" />, sym: 'NVDA' },
     { l: 'You', v: p.c, c: '#F4F5F4', sym: 'in kind' },
     { l: 'Buyback and burn', v: p.b, c: '#FF7A1A', logo: <Pons size="h-4 w-4" />, sym: 'PONS' },
     { l: 'Treasury', v: p.t, c: '#F6C343', logo: <StockLogo address={SPY} size="h-4 w-4" text="text-[5px]" />, sym: 'SPY' },

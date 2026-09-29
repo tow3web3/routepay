@@ -21,8 +21,8 @@ function Change({ v, className = '' }) {
 }
 
 function Spark({ data, up, height = 96, id }) {
-  const color = up ? '#45DB62' : '#FF5C33';
-  const fill = up ? '#19D13B' : '#FF5C33';
+  const color = up ? '#C4F54A' : '#FF5C33';
+  const fill = up ? '#C8FD3B' : '#FF5C33';
   const [min, max] = useMemo(() => { const ps = data.map((d) => d.p); return [Math.min(...ps), Math.max(...ps)]; }, [data]);
   const pad = (max - min) * 0.15 || max * 0.02 || 1;
   return (

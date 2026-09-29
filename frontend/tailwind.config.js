@@ -11,18 +11,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Route green (#19D13B): money moving.
+        // Route green (#C8FD3B): money moving.
         hood: {
-          50: '#0A170D',
-          100: '#0E2113',
-          200: '#15361D',
-          300: '#1D5229',
-          400: '#3BE05A',
-          500: '#19D13B',
-          600: '#45DB62',
-          700: '#6BE583',
-          800: '#98EFA9',
-          900: '#C8F7D1',
+          50: '#12170A',
+          100: '#1A220C',
+          200: '#2B3A12',
+          300: '#405819',
+          400: '#D6FE6A',
+          500: '#C8FD3B',
+          600: '#C4F54A',
+          700: '#D4FA78',
+          800: '#E2FCA3',
+          900: '#F0FDCF',
         },
         // Gold: the premium accent.
         gold: {
@@ -62,7 +62,7 @@ module.exports = {
       fontWeight: { bold: '600', extrabold: '620' },
       boxShadow: {
         soft: '0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px rgba(0, 0, 0, 0.45)',
-        glow: '0 0 0 1px rgba(25, 209, 59, 0.35), 0 12px 40px rgba(25, 209, 59, 0.12)',
+        glow: '0 0 0 1px rgba(200, 253, 59, 0.35), 0 12px 40px rgba(200, 253, 59, 0.12)',
         gold: '0 0 0 1px rgba(233, 179, 42, 0.25), 0 12px 40px rgba(233, 179, 42, 0.1)',
       },
       keyframes: {
@@ -77,7 +77,7 @@ module.exports = {
         },
         pop: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '60%': { transform: 'scale(1.05)' }, '100%': { transform: 'scale(1)', opacity: '1' } },
         orbit: { from: { transform: 'rotate(0deg) translateX(var(--r)) rotate(0deg)' }, to: { transform: 'rotate(360deg) translateX(var(--r)) rotate(-360deg)' } },
-        tick: { '0%': { backgroundColor: 'rgba(25,209,59,0.35)' }, '100%': { backgroundColor: 'transparent' } },
+        tick: { '0%': { backgroundColor: 'rgba(200, 253, 59,0.35)' }, '100%': { backgroundColor: 'transparent' } },
       },
       animation: {
         marquee: 'marquee 40s linear infinite',

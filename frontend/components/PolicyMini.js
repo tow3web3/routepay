@@ -13,7 +13,7 @@ import { getStock, ZERO } from '../lib/stocks';
 
 // A kind of destination is told by its icon and its colour, as on the canvas.
 const KIND = {
-  holders: { label: 'Holders', icon: Users, color: '#19D13B', text: 'text-hood-600' },
+  holders: { label: 'Holders', icon: Users, color: '#C8FD3B', text: 'text-hood-600' },
   wallet: { label: 'Wallet', icon: Wallet, color: '#F4F5F4', text: 'text-ink' },
   burn: { label: 'Buyback & burn', icon: Burn, color: '#FF7A1A', text: 'text-orange-700' },
   treasury: { label: 'Treasury', icon: Vault, color: '#F6C343', text: 'text-gold-700' },
@@ -90,7 +90,7 @@ export default function PolicyMini({ source, devWallet, schedule, legs: rawLegs,
               </g>
             );
           })}
-          <rect x={srcW - 4.5} y={midY - 4.5} width="9" height="9" rx="2" fill="#19D13B" stroke="#0A0A0A" strokeWidth="1.5" />
+          <rect x={srcW - 4.5} y={midY - 4.5} width="9" height="9" rx="2" fill="#C8FD3B" stroke="#0A0A0A" strokeWidth="1.5" />
         </svg>
       )}
 

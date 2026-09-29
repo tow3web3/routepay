@@ -12,7 +12,7 @@ export const PLATFORMS = {
   facebook: { label: 'Facebook', noun: 'page', color: '#1877F2', placeholder: 'facebook.com/page', proof: 'oauth', hosts: ['facebook.com', 'fb.com'] },
   tiktok: { label: 'TikTok', noun: 'account', color: '#25F4EE', placeholder: 'tiktok.com/@handle', proof: 'oauth', hosts: ['tiktok.com'] },
   twitch: { label: 'Twitch', noun: 'channel', color: '#9146FF', placeholder: 'twitch.tv/channel', proof: 'oauth', hosts: ['twitch.tv'] },
-  domain: { label: 'Domain', noun: 'website', color: '#19D13B', placeholder: 'example.com', proof: 'dns', hosts: [] },
+  domain: { label: 'Domain', noun: 'website', color: '#C8FD3B', placeholder: 'example.com', proof: 'dns', hosts: [] },
 };
 export const PLATFORM_KEYS = Object.keys(PLATFORMS);
 

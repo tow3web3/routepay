@@ -35,7 +35,7 @@ export async function GET(request, { params }) {
   return new ImageResponse(
     (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: COLORS.ground, fontFamily: font, color: COLORS.ink, padding: 56, position: 'relative' }}>
-        <div style={{ position: 'absolute', top: -200, right: -100, width: 560, height: 560, borderRadius: 560, background: 'rgba(25,209,59,0.16)' }} />
+        <div style={{ position: 'absolute', top: -200, right: -100, width: 560, height: 560, borderRadius: 560, background: 'rgba(200, 253, 59,0.16)' }} />
         <div style={{ position: 'absolute', bottom: -220, left: 100, width: 460, height: 460, borderRadius: 460, background: 'rgba(246,195,67,0.1)' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Wordmark siteUrl={site} />

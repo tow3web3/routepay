@@ -12,7 +12,7 @@ import { BRAND } from '../../lib/brand';
 
 // The preview: what one cycle of a sample routing sends, line by line.
 const SAMPLE = [
-  { icon: Users, color: '#19D13B', name: 'Holders', note: '412 wallets', share: 60, paid: [['NVDA', '0.0421'], ['GLD', '0.0106']] },
+  { icon: Users, color: '#C8FD3B', name: 'Holders', note: '412 wallets', share: 60, paid: [['NVDA', '0.0421'], ['GLD', '0.0106']] },
   { icon: Wallet, color: '#F4F5F4', name: 'You', note: 'your own wallet', share: 20, paid: [['NVDA', '0.0140']] },
   { icon: Vault, color: '#F6C343', name: 'Treasury', note: 'holds SPY', share: 10, paid: [['SPY', '0.0058']] },
   { page: { platform: 'github', handle: 'your-project' }, color: '#5B9DFF', name: 'your-project', note: 'a page, paid in its vault', share: 10, paid: [['ETH', '0.0031']] },

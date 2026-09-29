@@ -4,7 +4,7 @@
 
 body {
   @apply min-h-screen bg-ground text-ink antialiased;
-  background-image: radial-gradient(1000px circle at 50% -20%, rgba(25, 209, 59, 0.09), transparent 60%);
+  background-image: radial-gradient(1000px circle at 50% -20%, rgba(200, 253, 59, 0.09), transparent 60%);
   background-attachment: fixed;
   color-scheme: dark;
 }
@@ -27,7 +27,7 @@ body {
     width: 9px;
     height: 9px;
     pointer-events: none;
-    border-color: #19D13B;
+    border-color: #C8FD3B;
     border-style: solid;
     opacity: 0.85;
   }
@@ -55,7 +55,7 @@ body {
   }
   .btn-primary:hover {
     @apply -translate-y-px bg-hood-400;
-    box-shadow: 0 8px 24px rgba(25, 209, 59, 0.3);
+    box-shadow: 0 8px 24px rgba(200, 253, 59, 0.3);
   }
   .btn-primary:active {
     @apply translate-y-0;
@@ -126,7 +126,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(100deg, #19D13B, #6BE583 55%, #C8F7D1);
+  background: linear-gradient(100deg, #C8FD3B, #D4FA78 55%, #F0FDCF);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -241,4 +241,4 @@ body {
 .route-dash { stroke-dasharray: 4 12; animation: route-dash 1.8s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .route-dash { animation: none; } }
 
-::selection { background: rgba(25, 209, 59, 0.3); }
+::selection { background: rgba(200, 253, 59, 0.3); }

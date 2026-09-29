@@ -8,7 +8,7 @@ import { getStock } from '../lib/stocks';
 const D = 'var(--font-display), var(--font-sans), system-ui, sans-serif';
 const F = 'var(--font-sans), system-ui, sans-serif';
 const M = 'var(--font-mono), ui-monospace, monospace';
-const GREEN = '#19D13B', MINT = '#45DB62', INK = '#F4F5F4', MUT = '#8A9099', LINE = '#2A2E33', FAINT = '#17191C', PAPER = '#101112', SLAB = '#15171A', RED = '#FF5C33', GOLD = '#F6C343', GREY = '#4A5058';
+const GREEN = '#C8FD3B', MINT = '#C4F54A', INK = '#F4F5F4', MUT = '#8A9099', LINE = '#2A2E33', FAINT = '#17191C', PAPER = '#101112', SLAB = '#15171A', RED = '#FF5C33', GOLD = '#F6C343', GREY = '#4A5058';
 
 const TOKENS = { PONS: '/logos/tokens/PONS.png', NASDUCK: '/logos/tokens/NASDUCK.png' };
 const PLATFORM = (p) => `/logos/platforms/${p}.svg`;
@@ -137,7 +137,7 @@ function Payout() {
       {sets.map(([h, , , a, b], k) => (
         <g key={h}>
           <Box x={24 + k * 136} y={160} w={120} h={32} />
-          <g opacity="0"><Box x={24 + k * 136} y={160} w={120} h={32} fill="rgba(25,209,59,0.08)" stroke={GREEN} />{blink(a, b, '9s')}</g>
+          <g opacity="0"><Box x={24 + k * 136} y={160} w={120} h={32} fill="rgba(200, 253, 59,0.08)" stroke={GREEN} />{blink(a, b, '9s')}</g>
           <Mono x={84 + k * 136} y={180} anchor="middle" size={10}>{['100 / 0', '80 / 20', '70 / 30'][k]}</Mono>
         </g>
       ))}
@@ -162,7 +162,7 @@ function Vault() {
       <Fig x={64} y={134} size={13}>PONS</Fig>
       <Flow d="M 124 120 H 168" />
 
-      <Box x={168} y={74} w={140} h={92} stroke="#1D5229" />
+      <Box x={168} y={74} w={140} h={92} stroke="#405819" />
       <Cap x={180} y={92} fill={MINT}>Page vault, public</Cap>
       {[['0.012 ETH', 0, 0.2], ['0.031 ETH', 0.22, 0.42], ['0.058 ETH', 0.44, 0.68], ['0.000 ETH', 0.74, 0.98]].map(([v, a, b], k) => (
         <g key={v} opacity="0"><Fig x={180} y={128} size={22} fill={k === 3 ? MUT : INK}>{v}</Fig>{blink(a, b)}</g>
@@ -360,7 +360,7 @@ function Hours() {
     <Svg label="Cycles run during market hours and are skipped when Wall Street is closed">
       <Cap x={24} y={40}>Every 1 to 60 minutes</Cap>
       <Cap x={416} y={40} anchor="end">Skipped when Wall Street is closed</Cap>
-      <rect x={X(9.5)} y="76" width={X(16) - X(9.5)} height="76" rx="3" fill="rgba(25,209,59,0.07)" stroke="#1D5229" />
+      <rect x={X(9.5)} y="76" width={X(16) - X(9.5)} height="76" rx="3" fill="rgba(200, 253, 59,0.07)" stroke="#405819" />
       <Cap x={(X(9.5) + X(16)) / 2} y={68} anchor="middle" fill={MINT}>Market open</Cap>
       {Array.from({ length: 48 }, (_, k) => {
         const h = k / 2 + 0.25;
@@ -441,7 +441,7 @@ function Convert() {
           </g>
         );
       })}
-      <Box x={190} y={97} w={68} h={36} stroke="#1D5229" />
+      <Box x={190} y={97} w={68} h={36} stroke="#405819" />
       <Cap x={224} y={118} anchor="middle" fill={MINT}>Convert</Cap>
       <Flow d="M 258 115 H 344" dur="1.2s" />
       <Disc r={7} t="SPY" opacity="0">
@@ -522,7 +522,7 @@ function Guard() {
     <Svg label="A conversion is checked against the fair price before it is executed">
       <Cap x={24} y={38}>Fill vs fair price</Cap>
       <Cap x={404} y={38} anchor="end" fill={MINT}>Fair price</Cap>
-      <rect x={X(94)} y="52" width={X(100) - X(94)} height="128" fill="rgba(25,209,59,0.08)" />
+      <rect x={X(94)} y="52" width={X(100) - X(94)} height="128" fill="rgba(200, 253, 59,0.08)" />
       <Rule x1={X(100)} x2={X(100)} y1={46} y2={180} stroke={GREEN} />
       {rows.map(([v, y, p, tone, note]) => (
         <g key={v}>

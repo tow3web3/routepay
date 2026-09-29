@@ -22,7 +22,7 @@ export default function PolicyEditor({ value, onChange, showAddresses = true }) 
   const presetKey = `${holders}-${creator}-${burn}-${treasury}`;
 
   const bar = useMemo(() => [
-    ['Holders', holders, '#19D13B', Users], ['You', creator, '#F4F5F4', Wallet], ['Burn', burn, '#FF7A1A', Burn], ['Treasury', treasury, '#F6C343', Vault],
+    ['Holders', holders, '#C8FD3B', Users], ['You', creator, '#F4F5F4', Wallet], ['Burn', burn, '#FF7A1A', Burn], ['Treasury', treasury, '#F6C343', Vault],
   ], [holders, creator, burn, treasury]);
 
   return (

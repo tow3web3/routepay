@@ -9,7 +9,7 @@ import { BRAND, SITE_URL } from './brand';
 export const CARD = { width: 1200, height: 630 };
 // Dark only, like the site: ink is the text colour, ground and paper are the
 // fills, coal is the text on a solid accent, disc is the white disc behind a logo.
-export const COLORS = { green: '#19D13B', greenDeep: '#45DB62', gold: '#F6C343', ink: '#F4F5F4', mut: '#8A9099', line: '#24272B', paper: '#101112', ground: '#0A0A0A', tint: '#0E2113', coal: '#0A0A0A', disc: '#FFFFFF' };
+export const COLORS = { green: '#C8FD3B', greenDeep: '#C4F54A', gold: '#F6C343', ink: '#F4F5F4', mut: '#8A9099', line: '#24272B', paper: '#101112', ground: '#0A0A0A', tint: '#1A220C', coal: '#0A0A0A', disc: '#FFFFFF' };
 
 let fontCache = null;
 /** Manrope 800 as a TTF buffer (Satori needs TTF/OTF/WOFF, never woff2). Falls back to the default font. */

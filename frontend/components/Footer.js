@@ -16,7 +16,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>
           <div className="flex items-center gap-2.5">
-            <Mark className="h-7 w-7" />
+            <Mark className="h-9 w-9" />
             <span className="font-display text-base font-semibold tracking-tight text-ink">{BRAND}</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-mut">{TAGLINE}: to holders, wallets, buybacks, a treasury, and any page on the internet.</p>

@@ -15,7 +15,7 @@ import { getStock } from '../lib/stocks';
 const EASE = [0.16, 1, 0.3, 1];
 const CYCLE = 1000;
 const ROWS = [
-  { key: 'holders', name: 'Holders', via: 'The dividend, by balance and holding time', asset: 'NVDA', color: '#19D13B', Icon: Users, share: 45, sink: true },
+  { key: 'holders', name: 'Holders', via: 'The dividend, by balance and holding time', asset: 'NVDA', color: '#C8FD3B', Icon: Users, share: 45, sink: true },
   { key: 'pages', name: 'Pages', via: 'A vault per page, claimed by signing in', asset: 'ETH', color: '#5B9DFF', share: 25, pages: true },
   { key: 'wallet', name: 'Wallets', via: 'You, a partner, a budget, a DAO', asset: 'in kind', color: '#F4F5F4', Icon: Wallet, share: 10 },
   { key: 'burn', name: 'Buyback and burn', via: 'Buys your coin on Uniswap, burns it', asset: 'your coin', color: '#FF7A1A', Icon: Burn, share: 10 },

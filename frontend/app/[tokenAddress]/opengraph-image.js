@@ -43,7 +43,7 @@ export default async function Image({ params }) {
   return new ImageResponse(
     (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: COLORS.ground, fontFamily: font, color: COLORS.ink, padding: 56, position: 'relative' }}>
-        <div style={{ position: 'absolute', top: -180, right: -140, width: 560, height: 560, borderRadius: 560, background: 'rgba(25,209,59,0.16)' }} />
+        <div style={{ position: 'absolute', top: -180, right: -140, width: 560, height: 560, borderRadius: 560, background: 'rgba(200, 253, 59,0.16)' }} />
         <div style={{ position: 'absolute', bottom: -220, left: 240, width: 460, height: 460, borderRadius: 460, background: 'rgba(246,195,67,0.1)' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Wordmark siteUrl={site} />
@@ -79,7 +79,7 @@ export default async function Image({ params }) {
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 280, height: 280, borderRadius: 280, background: COLORS.disc, border: `10px solid ${COLORS.green}`, boxShadow: '0 30px 80px rgba(25,209,59,0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 280, height: 280, borderRadius: 280, background: COLORS.disc, border: `10px solid ${COLORS.green}`, boxShadow: '0 30px 80px rgba(200, 253, 59,0.3)' }}>
             {/* A changing reward (roulette, gainer, portfolio, vote) has no single logo: the coin's own stands in. */}
             {rewLogo && !modeLabel ? <img src={rewLogo} width={190} height={190} style={{ borderRadius: 190 }} alt="" />
               : srcLogo ? <img src={srcLogo} width={190} height={190} style={{ borderRadius: 190 }} alt="" />

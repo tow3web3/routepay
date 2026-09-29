@@ -190,7 +190,8 @@ export async function complete(provider, { code, state }) {
   if (!code) throw new Error('The platform returned no authorisation code');
 
   const tok = await p.token({ grant_type: 'authorization_code', code: String(code), redirect_uri: redirectUri(provider), client_id: c.id, client_secret: c.secret, ...(saved.verifier ? { code_verifier: saved.verifier } : {}) }, c);
-  const accessToken = tok.access_token || tok.data?.access_token;
+  // Instagram wraps its answer in a list on some versions of its API.
+  const accessToken = tok.access_token || tok.data?.access_token || tok.data?.[0]?.access_token;
   if (!accessToken) throw new Error(tok.error_description || tok.error?.message || tok.error || 'The platform returned no access token');
 
   const found = (await p.identities(accessToken, c)).slice(0, MAX_IDENTITIES).map((i) => ({

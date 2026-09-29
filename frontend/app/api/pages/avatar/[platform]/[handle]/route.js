@@ -27,6 +27,20 @@ function sources(platform, handle, stored) {
   return list.filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
 }
 
+/** The picture of a Facebook Page, asked to Meta with the keys of the app. Empty without them. */
+async function facebookPicture(handle) {
+  const id = process.env.OAUTH_FACEBOOK_CLIENT_ID;
+  const secret = process.env.OAUTH_FACEBOOK_CLIENT_SECRET;
+  if (!id || !secret) return [];
+  try {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${encodeURIComponent(handle)}/picture?type=large&redirect=false&access_token=${encodeURIComponent(`${id}|${secret}`)}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+    const d = await res.json();
+    return res.ok && d?.data?.url && !d.data.is_silhouette ? [d.data.url] : [];
+  } catch {
+    return [];
+  }
+}
+
 async function fetchImage(url) {
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8' }, redirect: 'follow', cache: 'no-store', signal: AbortSignal.timeout(8000) });
   // The favicon services answer 404 with a placeholder globe: only a 200 is the real picture.
@@ -59,7 +73,9 @@ export async function GET(request, { params }) {
   let image = hit && Date.now() - hit.ts < (hit.image.fallback ? MISS_TTL : TTL) ? hit.image : null;
   if (!image) {
     const stored = await getPage(platform, handle).then((p) => p?.avatar_url || null).catch(() => null);
-    for (const url of sources(platform, handle, stored)) {
+    const list = sources(platform, handle, stored);
+    if (platform === 'facebook') list.splice(stored ? 1 : 0, 0, ...(await facebookPicture(handle)));
+    for (const url of list) {
       try { image = await fetchImage(url); } catch { image = null; }
       if (image) break;
     }

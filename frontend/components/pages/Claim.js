@@ -10,7 +10,7 @@ import { Arrow, Check, Copy, PlatformIcon } from '../Icons';
 import StockLogo from '../StockLogo';
 import { PageAvatar, ClaimBadge, fmtUsd, fmtAmount, shortAddr, ago } from './PageParts';
 import { useWallet } from '../../lib/useWallet';
-import { PLATFORMS, PLATFORM_KEYS, normalizeHandle, pageName, pagePath } from '../../lib/pages';
+import { PLATFORMS, PLATFORM_KEYS, normalizeHandle, pageName, pagePath, pageAvatar } from '../../lib/pages';
 import { claimMessage } from '../../lib/claimMessage';
 import { BRAND } from '../../lib/brand';
 
@@ -104,6 +104,15 @@ function Result({ p, busy, wallet, onClaim }) {
   );
 }
 
+/** The picture of a connected account, small. One that does not load leaves the name alone. */
+function Face({ p }) {
+  const [gone, setGone] = useState(false);
+  const src = p.avatar || pageAvatar(p.platform, p.handle);
+  if (gone || !src) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" onError={() => setGone(true)} className="h-4 w-4 shrink-0 rounded-full border border-line object-cover" />;
+}
+
 export default function Claim({ initialPlatform = null, initialHandle = '', initialError = null, signed = false }) {
   const wallet = useWallet();
   const [platform, setPlatform] = useState(PLATFORMS[initialPlatform] ? initialPlatform : null);
@@ -142,7 +151,12 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
   // What waits in the vaults of the connected pages: the first thing to say once connected.
   const waiting = proved.filter((p) => !p.claimed).reduce((s, p) => s + (p.vaultUsd || 0), 0);
   const connectUrl = (k) => `/api/oauth/${k}/start?return=${encodeURIComponent(`/claim?platform=${k}${wanted && k === platform ? `&handle=${encodeURIComponent(wanted)}` : ''}`)}`;
-  const connected = (k) => (state?.proved || []).some((p) => p.platform === k);
+  const accounts = (k) => (state?.proved || []).filter((p) => p.platform === k);
+  const connected = (k) => accounts(k).length > 0;
+  // Nothing chosen and something connected: open it, so the answer is on screen.
+  useEffect(() => {
+    if (!platform && state?.proved?.length) setPlatform(state.proved[0].platform);
+  }, [state, platform]);
   // One click: a platform that can connect goes straight to its sign-in.
   const pick = (k) => {
     setError(null); setRecord(null);
@@ -215,15 +229,24 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {PLATFORM_KEYS.map((k) => {
             const on = k === 'domain' || Boolean(state?.platforms?.[k]);
+            const mine = accounts(k);
+            const owed = mine.filter((p) => !p.claimed).reduce((t, p) => t + (p.vaultUsd || 0), 0);
             return (
               <button key={k} type="button" onClick={() => pick(k)} disabled={busy === `connect:${k}`}
-                className={`group flex flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition ${platform === k ? 'border-hood-500 bg-hood-50' : 'border-line bg-ground hover:border-mut'}`}>
+                className={`group flex min-w-0 flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition ${platform === k ? 'border-hood-500 bg-hood-50' : mine.length ? 'border-hood-300 bg-ground hover:border-hood-500' : 'border-line bg-ground hover:border-mut'}`}>
                 <span className="flex w-full items-center justify-between">
                   <PlatformIcon platform={k} className="h-5 w-5 shrink-0" />
-                  {connected(k) ? <Check className="h-3.5 w-3.5 text-hood-500" /> : <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-hood-500' : 'bg-line'}`} />}
+                  {mine.length ? (owed > 0 ? <span className="figure rounded-full bg-hood-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-coal">{fmtUsd(owed)}</span> : <Check className="h-3.5 w-3.5 text-hood-500" />) : <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-hood-500' : 'bg-line'}`} />}
                 </span>
                 <span className="text-sm font-semibold text-ink">{PLATFORMS[k].label}</span>
-                <span className="label !text-[9.5px]">{busy === `connect:${k}` ? 'opening…' : connected(k) ? 'connected' : k === 'domain' ? 'DNS record' : on ? 'connect' : 'soon'}</span>
+                <span className="label !text-[9.5px]">{busy === `connect:${k}` ? 'opening…' : mine.length ? 'connected as' : k === 'domain' ? 'DNS record' : on ? 'connect' : 'soon'}</span>
+                {mine.length > 0 && (
+                  <span className="-mt-1 flex w-full min-w-0 items-center gap-1.5">
+                    <Face p={mine[0]} />
+                    <span className="truncate font-mono text-[11px] font-semibold text-hood-500">{pageName(k, mine[0].handle)}</span>
+                    {mine.length > 1 && <span className="figure shrink-0 text-[10px] text-mut">+{mine.length - 1}</span>}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -289,7 +312,7 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
       <p className="px-1 text-xs leading-relaxed text-mut">
         Looking for a page? <Link href="/pages" className="font-semibold text-ink hover:text-hood-600">Browse the directory</Link>
         {platform && initialHandle && normalizeHandle(platform, initialHandle) ? <> or open <Link href={pagePath(platform, normalizeHandle(platform, initialHandle))} className="font-semibold text-ink hover:text-hood-600">{pageName(platform, normalizeHandle(platform, initialHandle))}</Link></> : null}.
-        {signed && proved.length === 0 && state ? ' Your sign-in expired: sign in again.' : ''}
+        {signed && platform && platform !== 'domain' && state && !connected(platform) ?' Your sign-in expired: sign in again.' : ''}
       </p>
     </div>
   );

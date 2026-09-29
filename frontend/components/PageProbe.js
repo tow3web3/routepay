@@ -12,11 +12,27 @@ import { PLATFORMS, PLATFORM_KEYS, parsePage, pageName, pagePath, pageAvatar } f
 const EASE = [0.16, 1, 0.3, 1];
 const HINTS = ['youtube.com/@channel', 'github.com/project', 'x.com/handle', 'yoursite.com', 'twitch.tv/channel', 'instagram.com/handle'];
 
+// What a click on a platform writes in the field: the start of its address, ready for the name.
+const PREFIX = { youtube: 'youtube.com/@', github: 'github.com/', x: 'x.com/', instagram: 'instagram.com/', facebook: 'facebook.com/', tiktok: 'tiktok.com/@', twitch: 'twitch.tv/', domain: '' };
+const startOf = (raw) => PLATFORM_KEYS.find((k) => PREFIX[k] && raw.toLowerCase() === PREFIX[k]);
+
 export default function PageProbe() {
   const [text, setText] = useState('');
   const [hint, setHint] = useState(0);
   const [state, setState] = useState({ status: 'idle' });
   const seq = useRef(0);
+  const field = useRef(null);
+
+  // A platform was clicked: write the start of its address and keep the name already typed.
+  const choose = (k) => {
+    const typed = state.status === 'found' && state.page.platform !== 'domain' && k !== 'domain' ? state.page.handle.replace(/^@/, '') : '';
+    const next = k === 'domain' ? '' : PREFIX[k] + (/^UC[\w-]{20,}$/.test(typed) ? '' : typed);
+    setText(next);
+    requestAnimationFrame(() => {
+      field.current?.focus();
+      field.current?.setSelectionRange(next.length, next.length);
+    });
+  };
 
   useEffect(() => {
     if (text) return undefined;
@@ -26,7 +42,10 @@ export default function PageProbe() {
 
   useEffect(() => {
     const raw = text.trim();
-    if (!raw) { setState({ status: 'idle' }); return undefined; }
+    // Whatever was being looked up is for a text that is gone.
+    seq.current += 1;
+    // Empty, or only the start of an address: the name is still to come.
+    if (!raw || startOf(raw)) { setState({ status: 'idle' }); return undefined; }
     const parsed = parsePage(raw);
     if (parsed.error) { setState({ status: raw.length > 5 ? 'error' : 'idle', error: parsed.error }); return undefined; }
     const mine = ++seq.current;
@@ -42,13 +61,14 @@ export default function PageProbe() {
   }, [text]);
 
   const page = state.page;
+  const active = page?.platform || startOf(text.trim());
   return (
     <div className="max-w-xl">
       <label className="label mb-2 block" htmlFor="probe">Try it: paste the link of any page</label>
       <div className={`flex items-center gap-3 rounded-xl border bg-paper px-4 transition-colors focus-within:border-hood-500 ${state.status === 'error' ? 'border-red-300' : 'border-line'}`}>
         <span className="font-mono text-sm text-hood-600">→</span>
         <div className="relative flex-1">
-          <input id="probe" value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" spellCheck={false} className="w-full bg-transparent py-3.5 font-mono text-sm text-ink outline-none" aria-describedby="probe-result" />
+          <input id="probe" ref={field} value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" spellCheck={false} className="w-full bg-transparent py-3.5 font-mono text-sm text-ink outline-none" aria-describedby="probe-result" />
           {!text && (
             <span className="pointer-events-none absolute inset-0 flex items-center overflow-hidden font-mono text-sm text-mut/60">
               <AnimatePresence mode="popLayout" initial={false}>
@@ -57,8 +77,13 @@ export default function PageProbe() {
             </span>
           )}
         </div>
-        <span className="hidden items-center gap-2 sm:flex" aria-hidden>
-          {PLATFORM_KEYS.map((k) => <PlatformIcon key={k} platform={k} className={`h-3.5 w-3.5 transition-opacity ${page && page.platform !== k ? 'opacity-25' : ''}`} />)}
+        <span className="hidden items-center sm:flex">
+          {PLATFORM_KEYS.map((k) => (
+            <button key={k} type="button" onClick={() => choose(k)} title={PLATFORMS[k].placeholder} aria-label={`Write a ${PLATFORMS[k].label} ${PLATFORMS[k].noun}`}
+              className={`rounded-md p-1 transition hover:bg-tile hover:opacity-100 ${active && active !== k ? 'opacity-25' : ''}`}>
+              <PlatformIcon platform={k} className="h-3.5 w-3.5" />
+            </button>
+          ))}
         </span>
       </div>
 

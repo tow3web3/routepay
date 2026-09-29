@@ -31,7 +31,9 @@ export async function GET() {
           proved.push({
             platform, handle, name: identity.name || pageName(platform, handle), avatar: identity.avatar, path: pagePath(platform, handle),
             exists: Boolean(page), claimed: Boolean(page?.claimed_wallet), claimedWallet: page?.claimed_wallet || null,
-            receivedUsd: view?.receivedUsd ?? 0, vaultUsd: view?.vaultBalance?.totalUsd ?? 0, vaultAssets: view?.vaultBalance?.assets || [], coins: view?.coins ?? 0,
+            receivedUsd: view?.receivedUsd ?? 0, paidToOwnerUsd: view?.paidToOwnerUsd ?? 0, payments: view?.payments ?? 0, lastAt: view?.lastAt || null,
+            vaultUsd: view?.vaultBalance?.totalUsd ?? 0, vaultAssets: view?.vaultBalance?.assets || [], coins: view?.coins ?? 0,
+            sources: (view?.sources || []).filter((s) => s.active).slice(0, 6),
           });
         }
       }

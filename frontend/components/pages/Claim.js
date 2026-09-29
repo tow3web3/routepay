@@ -7,7 +7,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Arrow, Check, Copy, PlatformIcon } from '../Icons';
-import { PageAvatar, ClaimBadge, fmtUsd, fmtAmount, shortAddr } from './PageParts';
+import StockLogo from '../StockLogo';
+import { PageAvatar, ClaimBadge, fmtUsd, fmtAmount, shortAddr, ago } from './PageParts';
 import { useWallet } from '../../lib/useWallet';
 import { PLATFORMS, PLATFORM_KEYS, normalizeHandle, pageName, pagePath } from '../../lib/pages';
 import { claimMessage } from '../../lib/claimMessage';
@@ -35,6 +36,71 @@ function CopyLine({ label, value }) {
         {ok ? <Check className="h-4 w-4 text-hood-600" /> : <Copy className="h-4 w-4" />}
       </button>
     </div>
+  );
+}
+
+/**
+ * What a connected page has to claim, said plainly: the amount waiting in its
+ * vault with every asset, or that nothing waits and why. The answer comes before
+ * the button, so nobody signs to find out.
+ */
+function Result({ p, busy, wallet, onClaim }) {
+  const has = !p.claimed && p.vaultUsd > 0;
+  const working = busy === `${p.platform}:${p.handle}`;
+  return (
+    <li className={`overflow-hidden rounded-xl border ${has ? 'border-hood-300 bg-hood-50' : 'border-line bg-ground'}`}>
+      <div className="flex flex-wrap items-center gap-3 px-4 pt-4">
+        <PageAvatar page={p} size="h-11 w-11" badge="h-[18px] w-[18px]" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2"><span className="truncate text-[15px] font-semibold text-ink">{p.name}</span>{p.exists && <ClaimBadge claimed={p.claimed} />}</div>
+          <div className="label mt-0.5 !text-[10px]">{PLATFORMS[p.platform]?.label} {PLATFORMS[p.platform]?.noun} · connected</div>
+        </div>
+        {p.exists && <Link href={p.path} target="_blank" className="label !text-[10px] transition-colors hover:!text-ink">public profile</Link>}
+      </div>
+
+      <div className="grid gap-x-6 gap-y-4 px-4 py-4 sm:grid-cols-[auto_1fr] sm:items-end">
+        <div>
+          <div className="label">{p.claimed ? 'In the vault since your claim' : 'Waiting for you'}</div>
+          <div className={`figure font-display text-5xl font-medium leading-none tracking-tight ${has || (p.claimed && p.vaultUsd > 0) ? 'text-hood-500' : 'text-ink'}`}>{fmtUsd(p.vaultUsd)}</div>
+        </div>
+        <div className="text-sm leading-snug text-mut">
+          {p.claimed ? <>This page is already claimed: its fees go straight to <span className="font-mono text-ink">{shortAddr(p.claimedWallet)}</span>. {fmtUsd(p.paidToOwnerUsd)} paid so far. Sign again to send them to another wallet.</>
+            : has ? <>Held in the vault of this page, from {p.payments} payment{p.payments === 1 ? '' : 's'}{p.lastAt ? `, the last one ${ago(p.lastAt)}` : ''}. Claiming sends all of it to your wallet, and every later payment reaches it directly.</>
+              : p.exists && p.coins > 0 ? <>{p.coins} coin{p.coins === 1 ? ' routes' : 's route'} fees to this page, and the first payment has not run yet. Claim now: it will land in your wallet.</>
+                : p.exists ? <>No coin routes fees to this page at the moment, and its vault is empty.</>
+                  : <>No coin has routed fees to this page yet. You can still claim it ahead: the day one does, the fees come straight to your wallet.</>}
+        </div>
+      </div>
+
+      {p.vaultAssets.length > 0 && (
+        <ul className="grid gap-px border-t border-line bg-line sm:grid-cols-2">
+          {p.vaultAssets.map((a, i) => (
+            <li key={a.address} className={`flex items-center justify-between gap-3 bg-paper px-4 py-2.5 ${p.vaultAssets.length % 2 && i === p.vaultAssets.length - 1 ? 'sm:col-span-2' : ''}`}>
+              <span className="flex items-center gap-2"><StockLogo address={a.address} meta={{ symbol: a.symbol }} size="h-6 w-6" text="text-[7px]" /><span className="font-mono text-xs font-semibold text-ink">{a.symbol}</span></span>
+              <span className="text-right"><span className="figure block text-sm text-ink">{fmtAmount(a.amount)}</span><span className="figure block text-[11px] text-mut">{fmtUsd(a.usd)}</span></span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {p.sources?.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line px-4 py-2.5">
+          <span className="label">Routed by</span>
+          {p.sources.map((s) => (
+            <Link key={s.address} href={`/${s.address}`} target="_blank" className="inline-flex items-center gap-1.5 text-xs text-ink transition-colors hover:text-hood-600">
+              <StockLogo address={s.address} meta={s} size="h-5 w-5" text="text-[6px]" />{s.symbol ? `$${s.symbol}` : shortAddr(s.address)}<span className="figure text-mut">{(s.shareBps / 100).toFixed(s.shareBps % 100 ? 1 : 0)}%</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3">
+        <span className="text-xs text-mut">{wallet.connected ? <>To <span className="font-mono text-ink">{shortAddr(wallet.address)}</span>. No gas, one signature.</> : 'Connect the wallet that should be paid. No gas, one signature.'}</span>
+        <button type="button" onClick={onClaim} disabled={Boolean(busy)} className={has ? 'btn-primary' : 'btn-ghost'}>
+          {working ? 'Check your wallet…' : p.claimed ? 'Change the wallet' : has ? `Claim ${fmtUsd(p.vaultUsd)}` : wallet.connected ? 'Claim this page ahead' : 'Connect wallet'}
+        </button>
+      </div>
+    </li>
   );
 }
 
@@ -67,6 +133,8 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
   // Signed in, but as someone who does not run the page this visitor came for.
   const mismatch = wanted && proved.length > 0 && !proved.some((p) => p.handle === wanted);
   const cleanDomain = normalizeHandle('domain', domain);
+  // What waits in the vaults of the connected pages: the first thing to say once connected.
+  const waiting = proved.filter((p) => !p.claimed).reduce((s, p) => s + (p.vaultUsd || 0), 0);
   const connectUrl = (k) => `/api/oauth/${k}/start?return=${encodeURIComponent(`/claim?platform=${k}${wanted && k === platform ? `&handle=${encodeURIComponent(wanted)}` : ''}`)}`;
   const connected = (k) => (state?.proved || []).some((p) => p.platform === k);
   // One click: a platform that can connect goes straight to its sign-in.
@@ -157,28 +225,12 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
       </Step>
 
       {platform && platform !== 'domain' && (
-        <Step n={2} title={proved.length > 0 ? 'Choose the wallet that gets paid' : `Connect your ${PLATFORMS[platform].label} ${PLATFORMS[platform].noun}`} done={false}>
+        <Step n={2} title={proved.length > 0 ? (waiting > 0 ? `You have ${fmtUsd(waiting)} to claim` : proved.every((p) => p.claimed) ? 'Your page is claimed' : 'Nothing to claim yet') : `Connect your ${PLATFORMS[platform].label} ${PLATFORMS[platform].noun}`} done={false}>
           {!state ? <div className="h-10 animate-pulse rounded-xl bg-tile" /> : proved.length > 0 ? (
             <>
               {mismatch && <p className="mb-3 rounded-xl border border-gold-300 bg-gold-50 px-3 py-2 text-sm text-gold-700">You signed in, but not as the owner of {pageName(platform, wanted)}. Sign in with the account that runs it.</p>}
-              <ul className="space-y-2">
-                {proved.map((p) => (
-                  <li key={p.handle} className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-ground p-3">
-                    <PageAvatar page={p} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2"><span className="truncate text-sm font-semibold text-ink">{p.name}</span>{p.exists && <ClaimBadge claimed={p.claimed} />}</div>
-                      <div className="text-xs text-mut">
-                        {p.claimed ? `Paid to ${shortAddr(p.claimedWallet)}. Sign again to change the wallet.`
-                          : p.vaultUsd > 0 ? <><span className="figure font-semibold text-hood-600">{fmtUsd(p.vaultUsd)}</span> waiting in the vault{p.vaultAssets.length ? ` (${p.vaultAssets.slice(0, 3).map((a) => `${fmtAmount(a.amount)} ${a.symbol}`).join(', ')})` : ''}</>
-                            : p.exists ? `${p.coins} coin${p.coins === 1 ? '' : 's'} routing, nothing in the vault yet`
-                              : 'No coin routes here yet. Claim ahead and payments will reach you directly.'}
-                      </div>
-                    </div>
-                    <button type="button" onClick={() => sign(p)} disabled={Boolean(busy)} className="btn-primary !py-2 text-xs">
-                      {busy === `${p.platform}:${p.handle}` ? 'Check your wallet…' : wallet.connected ? `Pay ${shortAddr(wallet.address)}` : 'Connect wallet and claim'}
-                    </button>
-                  </li>
-                ))}
+              <ul className="space-y-3">
+                {proved.map((p) => <Result key={p.handle} p={p} busy={busy} wallet={wallet} onClaim={() => sign(p)} />)}
               </ul>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-mut">
                 <span>{wallet.connected ? <>Paid to <span className="font-mono text-ink">{shortAddr(wallet.address)}</span>. <button type="button" onClick={wallet.switchAccount} className="font-semibold text-hood-600 hover:underline">Use another wallet</button></> : 'The wallet you connect is the one that gets paid.'}</span>

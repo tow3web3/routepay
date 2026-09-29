@@ -10,6 +10,8 @@ import { Arrow, PlatformIcon } from './Icons';
 import { PLATFORMS, PLATFORM_KEYS, parsePage, pageName, pagePath, pageAvatar } from '../lib/pages';
 
 const EASE = [0.16, 1, 0.3, 1];
+// How long the typing must stop before the page is looked up.
+const SETTLE = 900;
 const HINTS = ['youtube.com/@channel', 'github.com/project', 'x.com/handle', 'yoursite.com', 'twitch.tv/channel', 'instagram.com/handle'];
 
 // What a click on a platform writes in the field: the start of its address, ready for the name.
@@ -49,14 +51,18 @@ export default function PageProbe() {
     const parsed = parsePage(raw);
     if (parsed.error) { setState({ status: raw.length > 5 ? 'error' : 'idle', error: parsed.error }); return undefined; }
     const mine = ++seq.current;
-    setState({ status: 'found', page: parsed, info: null });
+    // The name shows at once, read from the text. Its picture and its state are
+    // asked for only when the typing stops: a name half written is not a page.
+    setState({ status: 'found', page: parsed, info: null, settled: false });
     const t = setTimeout(async () => {
+      if (mine !== seq.current) return;
+      setState({ status: 'found', page: parsed, info: null, settled: true });
       try {
         const res = await fetch(`/api/pages/resolve?input=${encodeURIComponent(raw)}`);
         const info = res.ok ? await res.json() : null;
-        if (mine === seq.current && info) setState({ status: 'found', page: parsed, info });
+        if (mine === seq.current && info) setState({ status: 'found', page: parsed, info, settled: true });
       } catch { /* the parsed page is enough to show */ }
-    }, 300);
+    }, SETTLE);
     return () => clearTimeout(t);
   }, [text]);
 
@@ -92,7 +98,9 @@ export default function PageProbe() {
           {state.status === 'found' && (
             <motion.div key={`${page.platform}:${page.handle}`} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: EASE }} className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-ground px-4 py-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={pageAvatar(page.platform, page.handle)} alt="" className="h-10 w-10 rounded-full border border-line bg-tile object-cover" />
+              {state.settled
+                ? <img src={pageAvatar(page.platform, page.handle)} alt="" className="h-10 w-10 rounded-full border border-line bg-tile object-cover" />
+                : <span className="flex h-10 w-10 animate-pulse items-center justify-center rounded-full border border-line bg-tile"><PlatformIcon platform={page.platform} className="h-4 w-4 opacity-60" /></span>}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 text-sm font-semibold text-ink"><PlatformIcon platform={page.platform} className="h-3.5 w-3.5" /><span className="truncate">{state.info?.name || pageName(page.platform, page.handle)}</span></div>
                 <div className="text-xs text-mut">

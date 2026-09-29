@@ -410,7 +410,8 @@ function PageSection({ leg, patch, taken }) {
       patch({ page, pageInput: '', ...(KIND_LABELS.has(leg.label) ? { label: pageName(page.platform, page.handle).slice(0, 40) } : {}) });
       setText('');
       setState({ status: 'idle' });
-    }, 350);
+    // Long enough for a name typed by hand to be finished.
+    }, 1000);
     return () => clearTimeout(t);
   }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
   const p = leg.page;

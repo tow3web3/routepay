@@ -1,8 +1,9 @@
 'use client';
 
-// Claim a page in three steps: pick the platform, prove the page is yours
-// (sign in with the platform, or a DNS record for a domain), sign with the
-// wallet that should be paid. Nothing here costs gas.
+// Claim a page by connecting it: one click on a platform opens its sign-in,
+// the pages of that account come back with what waits for them, and one
+// signature from the wallet that should be paid sends it. A domain has no
+// sign-in, so it connects with a DNS record. Nothing here costs gas.
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Arrow, Check, Copy, PlatformIcon } from '../Icons';
@@ -66,6 +67,14 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
   // Signed in, but as someone who does not run the page this visitor came for.
   const mismatch = wanted && proved.length > 0 && !proved.some((p) => p.handle === wanted);
   const cleanDomain = normalizeHandle('domain', domain);
+  const connectUrl = (k) => `/api/oauth/${k}/start?return=${encodeURIComponent(`/claim?platform=${k}${wanted && k === platform ? `&handle=${encodeURIComponent(wanted)}` : ''}`)}`;
+  const connected = (k) => (state?.proved || []).some((p) => p.platform === k);
+  // One click: a platform that can connect goes straight to its sign-in.
+  const pick = (k) => {
+    setError(null); setRecord(null);
+    if (k !== 'domain' && state?.platforms?.[k] && !connected(k)) { setBusy(`connect:${k}`); window.location.assign(connectUrl(k)); return; }
+    setPlatform(k);
+  };
 
   async function sign(target) {
     setError(null);
@@ -128,19 +137,27 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
     <div className="mx-auto max-w-2xl space-y-4">
       {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
-      <Step n={1} title="Where is your page?" done={Boolean(platform)}>
+      <Step n={1} title="Connect your page" done={Boolean(platform) && (platform === 'domain' ? Boolean(record?.found) : connected(platform))}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {PLATFORM_KEYS.map((k) => (
-            <button key={k} type="button" onClick={() => { setPlatform(k); setError(null); setRecord(null); }}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition ${platform === k ? 'border-hood-500 bg-hood-50 text-ink' : 'border-line bg-ground text-mut hover:border-mut hover:text-ink'}`}>
-              <PlatformIcon platform={k} className="h-4 w-4 shrink-0" />{PLATFORMS[k].label}
-            </button>
-          ))}
+          {PLATFORM_KEYS.map((k) => {
+            const on = k === 'domain' || Boolean(state?.platforms?.[k]);
+            return (
+              <button key={k} type="button" onClick={() => pick(k)} disabled={busy === `connect:${k}`}
+                className={`group flex flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition ${platform === k ? 'border-hood-500 bg-hood-50' : 'border-line bg-ground hover:border-mut'}`}>
+                <span className="flex w-full items-center justify-between">
+                  <PlatformIcon platform={k} className="h-5 w-5 shrink-0" />
+                  {connected(k) ? <Check className="h-3.5 w-3.5 text-hood-500" /> : <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-hood-500' : 'bg-line'}`} />}
+                </span>
+                <span className="text-sm font-semibold text-ink">{PLATFORMS[k].label}</span>
+                <span className="label !text-[9.5px]">{busy === `connect:${k}` ? 'opening…' : connected(k) ? 'connected' : k === 'domain' ? 'DNS record' : on ? 'connect' : 'soon'}</span>
+              </button>
+            );
+          })}
         </div>
       </Step>
 
       {platform && platform !== 'domain' && (
-        <Step n={2} title={`Prove the ${PLATFORMS[platform].noun} is yours`} done={proved.length > 0 && !mismatch}>
+        <Step n={2} title={proved.length > 0 ? 'Choose the wallet that gets paid' : `Connect your ${PLATFORMS[platform].label} ${PLATFORMS[platform].noun}`} done={false}>
           {!state ? <div className="h-10 animate-pulse rounded-xl bg-tile" /> : proved.length > 0 ? (
             <>
               {mismatch && <p className="mb-3 rounded-xl border border-gold-300 bg-gold-50 px-3 py-2 text-sm text-gold-700">You signed in, but not as the owner of {pageName(platform, wanted)}. Sign in with the account that runs it.</p>}
@@ -165,25 +182,28 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
               </ul>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-mut">
                 <span>{wallet.connected ? <>Paid to <span className="font-mono text-ink">{shortAddr(wallet.address)}</span>. <button type="button" onClick={wallet.switchAccount} className="font-semibold text-hood-600 hover:underline">Use another wallet</button></> : 'The wallet you connect is the one that gets paid.'}</span>
-                <a href={`/api/oauth/${platform}/start?return=${encodeURIComponent(`/claim?platform=${platform}${wanted ? `&handle=${encodeURIComponent(wanted)}` : ''}`)}`} className="font-semibold text-mut hover:text-ink">Sign in with another account</a>
+                <a href={connectUrl(platform)} className="font-semibold text-mut hover:text-ink">Connect another account</a>
               </div>
             </>
           ) : enabled ? (
             <>
-              <p className="text-sm text-mut">Sign in with {PLATFORMS[platform].label}. {BRAND} reads which {PLATFORMS[platform].noun}s your account runs and nothing else: it cannot post, and it keeps no access afterwards.</p>
-              <a href={`/api/oauth/${platform}/start?return=${encodeURIComponent(`/claim?platform=${platform}${wanted ? `&handle=${encodeURIComponent(wanted)}` : ''}`)}`} className="btn-ink mt-4">
-                <PlatformIcon platform={platform} className="h-4 w-4" />Sign in with {PLATFORMS[platform].label}
+              <a href={connectUrl(platform)} className="btn-ink">
+                <PlatformIcon platform={platform} className="h-4 w-4" />Connect {PLATFORMS[platform].label}
               </a>
+              <p className="mt-3 text-xs text-mut">{BRAND} reads which {PLATFORMS[platform].noun}s your account runs and nothing else: it cannot post, and it keeps no access afterwards.</p>
             </>
           ) : (
-            <p className="rounded-xl border border-line bg-ground px-4 py-3 text-sm text-mut">Sign in with {PLATFORMS[platform].label} is not open yet. Fees routed to a {PLATFORMS[platform].label} {PLATFORMS[platform].noun} are safe in its vault until it is.</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-ground px-4 py-3">
+              <p className="text-sm text-mut">The {PLATFORMS[platform].label} connector opens soon. Until then your fees keep adding up in the vault of your {PLATFORMS[platform].noun}: nothing is lost.</p>
+              <Link href="/pages" className="text-sm font-semibold text-ink hover:text-hood-600">Find your page</Link>
+            </div>
           )}
         </Step>
       )}
 
       {platform === 'domain' && (
-        <Step n={2} title="Prove the domain is yours" done={Boolean(record?.found)}>
-          <p className="text-sm text-mut">A domain has no sign-in, so it proves itself with a DNS record. Connect the wallet that should be paid, then add the record where you manage the domain.</p>
+        <Step n={2} title="Connect your domain" done={Boolean(record?.found)}>
+          <p className="text-sm text-mut">A domain has no sign-in: it connects with a DNS record. Connect the wallet that should be paid, then add the record where you manage the domain.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <input value={domain} onChange={(e) => { setDomain(e.target.value); setRecord(null); }} placeholder="example.com" className="min-w-0 flex-1 rounded-xl border border-line bg-ground px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-mut/60 focus:border-hood-400" />
             <button type="button" onClick={domainRecord} disabled={!cleanDomain || busy === 'record'} className="btn-ink disabled:cursor-not-allowed disabled:opacity-50">{busy === 'record' ? 'Checking…' : record ? 'Check again' : wallet.connected ? 'Get my record' : 'Connect wallet'}</button>

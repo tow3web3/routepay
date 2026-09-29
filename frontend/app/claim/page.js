@@ -21,7 +21,7 @@ export default async function ClaimPage({ searchParams }) {
         <div className="mx-auto max-w-2xl text-center">
           <div className="eyebrow mb-2">Claim</div>
           <h1 className="font-display text-3xl font-medium tracking-tight text-ink sm:text-5xl">Fees were routed to your page. Take them.</h1>
-          <p className="mt-3 text-sm leading-relaxed text-mut">Prove the page is yours, choose the wallet that gets paid. What waited in the vault is sent to it, and every later payment reaches it directly. No gas, no fee.</p>
+          <p className="mt-3 text-sm leading-relaxed text-mut">Connect the page, choose the wallet that gets paid. What waited in the vault is sent to it, and every later payment reaches it directly. No gas, no fee.</p>
         </div>
         <div className="mt-8">
           <Claim initialPlatform={str(sp?.platform) || null} initialHandle={str(sp?.handle)} initialError={str(sp?.error) || null} signed={sp?.signed === '1'} />

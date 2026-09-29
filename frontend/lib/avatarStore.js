@@ -16,7 +16,9 @@ const file = (platform, handle) => path.join(DIR, crypto.createHash('sha256').up
 
 /** The image behind an address, or null when it is not a picture we can serve. */
 export async function fetchImage(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8' }, redirect: 'follow', cache: 'no-store', signal: AbortSignal.timeout(8000) });
+  // The key of the picture service opens the platforms it keeps for subscribers (Instagram, Facebook).
+  const key = process.env.UNAVATAR_KEY && new URL(url).hostname === 'unavatar.io' ? { 'x-api-key': process.env.UNAVATAR_KEY } : {};
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8', ...key }, redirect: 'follow', cache: 'no-store', signal: AbortSignal.timeout(8000) });
   // The favicon services answer 404 with a placeholder globe: only a 200 is the real picture.
   if (res.status !== 200) return null;
   const type = (res.headers.get('content-type') || '').split(';')[0].trim();

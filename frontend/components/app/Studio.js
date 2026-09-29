@@ -976,10 +976,18 @@ function StudioInner({ data, refresh, onLogout, onSwitchWallet, demo = false, on
       )}
       {tour && <Tour onDone={endTour} />}
       {demo && (
-        <div className="relative flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-line bg-ground py-2 pl-5 pr-4 text-[13px] leading-snug text-mut">
-          <span className="absolute inset-y-0 left-0 w-[2px] bg-hood-500" />
-          <span className="min-w-0 flex-1"><span className="label mr-2 text-hood-600">Sample policy</span>This is what a creator&apos;s canvas looks like: drag the nodes, open them, change shares and payout assets. Nothing is saved until you connect a wallet and pick your coin.</span>
-          <Button className="!px-3.5 !py-1.5 text-xs" onClick={onConnect}>Connect wallet and start<Arrow className="h-3 w-3" /></Button>
+        // The first thing a visitor must understand: this canvas is a sample, and one button makes it theirs.
+        <div className="sample-bar relative flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-hood-300 bg-hood-100 py-3.5 pl-6 pr-4">
+          <span className="absolute inset-y-0 left-0 w-1 bg-hood-500" />
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-hood-500 px-2 py-1 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-coal">
+              <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coal opacity-50" /><span className="relative h-1.5 w-1.5 rounded-full bg-coal" /></span>
+              Sample policy
+            </span>
+            <span className="text-[15px] font-semibold leading-snug text-ink">This canvas is a demo. Play with it, then route your own coin.</span>
+            <span className="w-full text-[13px] leading-snug text-mut">Drag the nodes, open them, change shares and payout assets. Nothing is saved until you connect a wallet and pick your coin.</span>
+          </span>
+          <Button className="sample-cta !px-5 !py-2.5 text-sm" onClick={onConnect}>Connect wallet and start<Arrow className="h-3.5 w-3.5" /></Button>
         </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">

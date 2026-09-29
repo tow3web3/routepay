@@ -73,7 +73,7 @@ export const PRIVACY = [
     body: [
       { rows: [
         ['Sign-in in progress', 'A cookie that lasts ten minutes, to check that the answer of the platform belongs to your request.'],
-        ['Connected pages', 'A cookie that lasts 30 minutes, holding the pages you proved. "Disconnect" on the claim page erases it.'],
+        ['Connected pages', 'One cookie per platform, lasting 30 minutes, holding the pages you proved. "Disconnect" on the claim page erases it.'],
         ['Wallet session', 'A cookie that lasts 30 days, holding the wallet you signed in with.'],
       ] },
       'These cookies are needed for the site to work, cannot be read by scripts, and are not used to follow you elsewhere. There are no advertising or analytics cookies.',

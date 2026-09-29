@@ -155,6 +155,25 @@ function unseal(token) {
 }
 const cookieOpts = (maxAge) => ({ httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge });
 
+// One cookie per platform, each kept small: a browser drops a cookie over 4 KB
+// and a proxy refuses headers that grow too large. Pictures go first (the
+// addresses Meta gives are long), then the identities at the end of the list.
+const identCookie = (platform) => `${IDENT_COOKIE}_${platform}`;
+const IDENT_MAX = 1800;
+function fit(found) {
+  let ids = found;
+  let sealed = seal({ ids }, IDENT_TTL);
+  if (sealed.length > IDENT_MAX) {
+    ids = ids.map((i) => ({ ...i, avatar: null }));
+    sealed = seal({ ids }, IDENT_TTL);
+  }
+  while (sealed.length > IDENT_MAX && ids.length > 1) {
+    ids = ids.slice(0, -1);
+    sealed = seal({ ids }, IDENT_TTL);
+  }
+  return sealed;
+}
+
 /** Only same-site paths: the callback must never forward a visitor to another host. */
 export const safeReturn = (p) => (typeof p === 'string' && /^\/(?![/\\])[\w\-./?=&%@:+~]*$/.test(p) && p.length < 300 ? p : '/claim');
 
@@ -201,21 +220,24 @@ export async function complete(provider, { code, state }) {
     avatar: typeof i.avatar === 'string' && /^https:\/\//.test(i.avatar) ? i.avatar.slice(0, 400) : null,
   })).filter((i) => i.handles.length);
 
-  const all = (await readIdentities()) || {};
-  all[p.platform] = found;
-  jar.set(IDENT_COOKIE, seal({ ids: all }, IDENT_TTL), cookieOpts(IDENT_TTL));
+  jar.set(identCookie(p.platform), fit(found), cookieOpts(IDENT_TTL));
   return { returnTo: saved.returnTo, count: found.length };
 }
 
 /** { platform: [{ id, handles, name, avatar }] } for what this visitor proved in the last half hour. */
 export async function readIdentities() {
   const jar = await cookies();
-  return unseal(jar.get(IDENT_COOKIE)?.value)?.ids || null;
+  const all = {};
+  for (const k of Object.keys(PROVIDERS)) {
+    const ids = unseal(jar.get(identCookie(k))?.value)?.ids;
+    if (ids?.length) all[k] = ids;
+  }
+  return Object.keys(all).length ? all : null;
 }
 
 export async function forgetIdentities() {
   const jar = await cookies();
-  jar.set(IDENT_COOKIE, '', cookieOpts(0));
+  for (const k of Object.keys(PROVIDERS)) jar.set(identCookie(k), '', cookieOpts(0));
 }
 
 /** The proved identity that owns (platform, handle), or null. */

@@ -42,6 +42,10 @@ export default function Footer() {
         ))}
       </div>
       <div className="mx-auto mt-8 max-w-6xl border-t border-line pt-5 text-xs leading-relaxed text-mut/70">
+        <div className="mb-2 flex gap-5 text-mut">
+          <Link href="/privacy" className="transition hover:text-ink">Privacy</Link>
+          <Link href="/terms" className="transition hover:text-ink">Terms</Link>
+        </div>
         © {year} {BRAND}. Not affiliated with Robinhood Markets: Stock Tokens are issued by Robinhood, {BRAND} only routes them. Not affiliated with YouTube, GitHub, X, Meta, TikTok or Twitch: their names identify where a page lives.
       </div>
     </footer>

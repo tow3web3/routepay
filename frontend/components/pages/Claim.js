@@ -127,6 +127,12 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
   }, []);
   useEffect(() => { load(); }, [load]);
 
+  // Forget every page this browser proved. A claim already made is not undone.
+  const disconnect = async () => {
+    await fetch('/api/claim', { method: 'DELETE' }).catch(() => {});
+    load();
+  };
+
   const proved = (state?.proved || []).filter((p) => p.platform === platform);
   const enabled = platform ? state?.platforms?.[platform] : false;
   const wanted = platform && platform !== 'domain' && initialHandle ? normalizeHandle(platform, initialHandle) : null;
@@ -234,7 +240,10 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
               </ul>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-mut">
                 <span>{wallet.connected ? <>Paid to <span className="font-mono text-ink">{shortAddr(wallet.address)}</span>. <button type="button" onClick={wallet.switchAccount} className="font-semibold text-hood-600 hover:underline">Use another wallet</button></> : 'The wallet you connect is the one that gets paid.'}</span>
-                <a href={connectUrl(platform)} className="font-semibold text-mut hover:text-ink">Connect another account</a>
+                <span className="flex items-center gap-4">
+                  <a href={connectUrl(platform)} className="font-semibold text-mut hover:text-ink">Connect another account</a>
+                  <button type="button" onClick={disconnect} className="font-semibold text-mut hover:text-ink">Disconnect</button>
+                </span>
               </div>
             </>
           ) : enabled ? (
@@ -242,7 +251,7 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
               <a href={connectUrl(platform)} className="btn-ink">
                 <PlatformIcon platform={platform} className="h-4 w-4" />Connect {PLATFORMS[platform].label}
               </a>
-              <p className="mt-3 text-xs text-mut">{BRAND} reads which {PLATFORMS[platform].noun}s your account runs and nothing else: it cannot post, and it keeps no access afterwards.</p>
+              <p className="mt-3 text-xs text-mut">{BRAND} reads which {PLATFORMS[platform].noun}s your account runs and nothing else: it cannot post, and it keeps no access afterwards. <Link href="/privacy#connect" className="underline underline-offset-2 hover:text-ink">What is read</Link></p>
             </>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-ground px-4 py-3">

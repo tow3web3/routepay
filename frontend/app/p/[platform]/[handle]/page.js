@@ -13,6 +13,7 @@ import { getPage } from '../../../../lib/pageQueries';
 import { pageView } from '../../../../lib/pageView';
 import { PLATFORMS, normalizeHandle, pageName, pageUrl, pagePath } from '../../../../lib/pages';
 import { BRAND } from '../../../../lib/brand';
+import { pageMeta } from '../../../../lib/meta';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,12 +29,13 @@ async function resolve(params) {
 
 export async function generateMetadata({ params }) {
   const r = await resolve(params);
-  if (!r) return { title: `Page not found · ${BRAND}` };
+  if (!r) return pageMeta({ title: 'Page not found', index: false });
   const name = pageName(r.platform, r.handle);
-  return {
-    title: `${name} on ${PLATFORMS[r.platform].label} · ${BRAND}`,
-    description: `Fees routed to ${name} by coins on Robinhood Chain: payments, vault and how its owner claims.`,
-  };
+  return pageMeta({
+    title: `${name} on ${PLATFORMS[r.platform].label}`,
+    description: `Fees routed to ${name} by coins on Robinhood Chain: what it received, what waits in its vault, and how its owner claims.`,
+    path: pagePath(r.platform, r.handle),
+  });
 }
 
 function Stat({ label, value, sub }) {

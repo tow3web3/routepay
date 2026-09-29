@@ -4,11 +4,13 @@ import Navigation from '../../components/Navigation';
 import Footer from '../../components/Footer';
 import Claim from '../../components/pages/Claim';
 import { BRAND } from '../../lib/brand';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = {
-  title: `Claim a page · ${BRAND}`,
-  description: 'A coin routes fees to your YouTube channel, GitHub account, domain or page. Sign in, connect a wallet, receive them.',
-};
+export const metadata = pageMeta({
+  title: 'Claim the fees routed to your page',
+  description: 'A coin routes fees to your YouTube channel, GitHub account, domain or page. Connect it, choose a wallet, receive what waited for you.',
+  path: '/claim',
+});
 
 export default async function ClaimPage({ searchParams }) {
   const sp = await searchParams;

@@ -10,13 +10,15 @@ import { pageCard, ethPrice } from '../../lib/pageView';
 import { fetchTokenMeta } from '../../lib/tokenMeta';
 import { PLATFORMS, PLATFORM_KEYS, parsePage, pagePath } from '../../lib/pages';
 import { BRAND } from '../../lib/brand';
+import { pageMeta } from '../../lib/meta';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = {
-  title: `Pages · ${BRAND}`,
-  description: 'YouTube channels, GitHub accounts, domains and other pages that coins on Robinhood Chain route their fees to.',
-};
+export const metadata = pageMeta({
+  title: 'Pages receiving fees',
+  description: 'YouTube channels, GitHub accounts, domains and other pages that coins on Robinhood Chain route their fees to, with what each one received.',
+  path: '/pages',
+});
 
 async function load({ platform, q }) {
   try {

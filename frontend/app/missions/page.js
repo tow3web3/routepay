@@ -6,8 +6,9 @@ import Footer from '../../components/Footer';
 import StockLogo from '../../components/StockLogo';
 import { Gem, Vote, Flame, Handshake, Dice, Chart, Lock, Sprout, Route, Whale, Crown } from '../../components/Icons';
 import { BRAND, TOKEN } from '../../lib/brand';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = { title: `Missions, coming soon · ${BRAND}` };
+export const metadata = pageMeta({ title: 'Missions, coming soon', description: 'Tasks for holders, with rewards paid on chain. Opening with the project token.', path: '/missions' });
 
 const PREVIEW = [
   { Icon: Gem, title: 'Diamond hands', body: `Hold tiers from 100K to 1M ${TOKEN}.` },

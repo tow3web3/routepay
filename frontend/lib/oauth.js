@@ -8,6 +8,7 @@ import dns from 'dns';
 import { cookies } from 'next/headers';
 import { SITE_URL } from './brand';
 import { normalizeHandle } from './pages';
+import { saveAvatar } from './avatarStore';
 
 const STATE_COOKIE = 'rp_oauth';
 const IDENT_COOKIE = 'rp_ident';
@@ -220,6 +221,8 @@ export async function complete(provider, { code, state }) {
     avatar: typeof i.avatar === 'string' && /^https:\/\//.test(i.avatar) ? i.avatar.slice(0, 400) : null,
   })).filter((i) => i.handles.length);
 
+  // Keep the pictures: the addresses platforms give stop working after a few days.
+  await Promise.allSettled(found.flatMap((i) => (i.avatar ? i.handles.map((h) => saveAvatar(p.platform, h, i.avatar)) : [])));
   jar.set(identCookie(p.platform), fit(found), cookieOpts(IDENT_TTL));
   return { returnTo: saved.returnTo, count: found.length };
 }

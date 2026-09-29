@@ -7,15 +7,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PLATFORMS, normalizeHandle } from '../../../../../../lib/pages';
 import { getPage } from '../../../../../../lib/pageQueries';
+import { fetchImage, readAvatar } from '../../../../../../lib/avatarStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const TTL = 24 * 3600 * 1000;
 const MISS_TTL = 30 * 60 * 1000;
-const MAX_BYTES = 600_000;
 const cache = new Map();
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
 
 /** Where the picture of a page can be found, best first. The handle is already validated. */
 function sources(platform, handle, stored) {
@@ -41,17 +40,6 @@ async function facebookPicture(handle) {
   }
 }
 
-async function fetchImage(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8' }, redirect: 'follow', cache: 'no-store', signal: AbortSignal.timeout(8000) });
-  // The favicon services answer 404 with a placeholder globe: only a 200 is the real picture.
-  if (res.status !== 200) return null;
-  const type = (res.headers.get('content-type') || '').split(';')[0].trim();
-  if (!/^image\/(png|jpeg|webp|avif|gif|x-icon|vnd\.microsoft\.icon)$/.test(type)) return null;
-  const body = Buffer.from(await res.arrayBuffer());
-  if (body.length < 100 || body.length > MAX_BYTES) return null;
-  return { body, type };
-}
-
 let platformLogos = null;
 async function platformLogo(platform) {
   platformLogos ??= new Map();
@@ -71,6 +59,8 @@ export async function GET(request, { params }) {
   const key = `${platform}:${handle}`;
   const hit = cache.get(key);
   let image = hit && Date.now() - hit.ts < (hit.image.fallback ? MISS_TTL : TTL) ? hit.image : null;
+  // The copy made when the owner connected comes first: it is the one that lasts.
+  if (!image || image.fallback) image = (await readAvatar(platform, handle)) || image;
   if (!image) {
     const stored = await getPage(platform, handle).then((p) => p?.avatar_url || null).catch(() => null);
     const list = sources(platform, handle, stored);

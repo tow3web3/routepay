@@ -34,7 +34,7 @@ export const PRIVACY = [
         ['A domain', 'No sign-in. We look up a public DNS record that you add to the domain.'],
       ] },
       'We do not read your videos, posts, messages, followers, e-mail address, contacts, or anything private. The list above is all of it.',
-      'What we read is kept in a signed cookie in your browser for 30 minutes, so the page can show what waits for you. It is stored on our side only if you claim, as described below.',
+      'What we read is kept in a signed cookie in your browser for 30 minutes, so the page can show what waits for you. The public picture of the page is copied to our server, so its profile here shows its own face. The rest is stored on our side only if you claim, as described below.',
     ],
   },
   {
@@ -98,7 +98,7 @@ export const PRIVACY = [
     body: [
       `Write to ${CONTACT_EMAIL} from a contact we can match to the page, or after connecting the page again so we know it is yours. Tell us the platform and the handle. We answer within 30 days.`,
       [
-        'We erase the account id, the display name and the picture stored with the claim, and unbind the wallet.',
+        'We erase the account id, the display name and the picture we hold for the page, and unbind the wallet.',
         'The cookies can be erased at any time from your browser, or with "Disconnect" on the claim page.',
         'The access you approved can be removed on the platform itself, in the settings of your account, under connected apps.',
         'Payments already made stay on the blockchain. The record that a public page received a given amount stays too: it is the accounting of the coin that paid it.',

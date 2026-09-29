@@ -123,7 +123,7 @@ export async function handleDashboardLink(ctx) {
 }
 
 export async function handleCommunity(ctx) {
-  await ctx.replyWithMarkdown(`💬 *The ${BRAND} community*\n\nCreators, holders, questions, receipts.\n\n${[copy.links.community(), copy.links.x(), copy.links.site()].filter(Boolean).join('\n')}`, keyboards.communityKeyboard());
+  await ctx.replyWithMarkdown(`💬 *The ${BRAND} community*\n\nCreators, holders, questions, receipts.\n\n${[copy.links.community(), copy.links.x(), copy.links.site()].filter(Boolean).map(mdEscape).join('\n')}`, keyboards.communityKeyboard());
 }
 
 export async function handleStocks(ctx) {

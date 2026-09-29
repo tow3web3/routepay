@@ -24,7 +24,14 @@ async function getJson(url, init = {}) {
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { /* not JSON: reported below */ }
-  if (!res.ok || !data) throw new Error(`${new URL(url).hostname} answered ${res.status}`);
+  if (!res.ok || !data) {
+    // The platform's own words say why: a plain status code does not. The answer of
+    // a refused call carries no token, so it is safe in the log and on the page.
+    const u = new URL(url);
+    const why = data?.detail || data?.error_description || data?.error?.message || data?.title || (typeof data?.error === 'string' ? data.error : '') || data?.message || '';
+    console.error(`OAuth: ${u.hostname}${u.pathname} answered ${res.status}: ${text.slice(0, 600)}`);
+    throw new Error(`${u.hostname} answered ${res.status}${why ? `: ${String(why).slice(0, 140)}` : ''}`);
+  }
   return data;
 }
 const bearer = (token) => ({ Authorization: `Bearer ${token}` });

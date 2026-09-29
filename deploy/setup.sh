@@ -15,14 +15,16 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # resolves to the VM without any DNS setup, so the site can be checked before
 # the domain points here.
 SITE_URL="${SITE_URL:-https://routepay.dev}"
-HOSTS="${HOSTS:-routepay.65-20-103-177.sslip.io}"
+HOSTS="${HOSTS:-routepay.dev www.routepay.dev routepay.65-20-103-177.sslip.io}"
 
 scp -q -i "$KEY" "$ROOT/deploy/routepay-bot.service" "$ROOT/deploy/routepay-web.service" "$ROOT/deploy/nginx-routepay.conf" "$VM:/tmp/"
 
 ssh -i "$KEY" "$VM" bash -s "$SITE_URL" "$HOSTS" <<'EOF'
 set -euo pipefail
 SITE_URL="$1"
-HOSTS="$2"
+# ssh hands the host list over word by word: everything after the first argument is a host.
+shift
+HOSTS="$*"
 FIRST_HOST="${HOSTS%% *}"
 APP=/root/routepay
 mkdir -p "$APP/backend" "$APP/frontend" /var/www/acme
@@ -104,8 +106,17 @@ systemctl enable -q routepay-bot routepay-web
 
 echo "nginx and certificate for: $HOSTS"
 CONF=/etc/nginx/sites-available/routepay
-# Until the certificate exists nginx only serves the challenge over HTTP.
-if [ ! -f "/etc/letsencrypt/live/$FIRST_HOST/fullchain.pem" ]; then
+full_site() {
+  sed -e "s/server_name routepay.65-20-103-177.sslip.io;/server_name $HOSTS;/" \
+      -e "s#/etc/letsencrypt/live/routepay.65-20-103-177.sslip.io/#/etc/letsencrypt/live/$FIRST_HOST/#" /tmp/nginx-routepay.conf > "$CONF"
+  ln -sf "$CONF" /etc/nginx/sites-enabled/routepay
+  nginx -t -q && systemctl reload nginx
+}
+if [ -f "/etc/letsencrypt/live/$FIRST_HOST/fullchain.pem" ]; then
+  # The site stays up while the certificate is extended to the names it does not cover yet.
+  full_site
+else
+  # Until the certificate exists nginx only serves the challenge over HTTP.
   cat > "$CONF" <<NGINX
 server {
     listen 80;
@@ -117,14 +128,11 @@ server {
 NGINX
   ln -sf "$CONF" /etc/nginx/sites-enabled/routepay
   nginx -t -q && systemctl reload nginx
-  # The snap certbot is the one that works on this VM; the apt one is broken by a Python library.
-  CERTBOT="$( [ -x /snap/bin/certbot ] && echo /snap/bin/certbot || echo certbot )"
-  "$CERTBOT" certonly --webroot -w /var/www/acme --non-interactive --agree-tos --keep-until-expiring --cert-name "$FIRST_HOST" $(printf -- '-d %s ' $HOSTS) 2>&1 | tail -2
 fi
-sed -e "s/server_name routepay.65-20-103-177.sslip.io;/server_name $HOSTS;/" \
-    -e "s#/etc/letsencrypt/live/routepay.65-20-103-177.sslip.io/#/etc/letsencrypt/live/$FIRST_HOST/#" /tmp/nginx-routepay.conf > "$CONF"
-ln -sf "$CONF" /etc/nginx/sites-enabled/routepay
-nginx -t -q && systemctl reload nginx
+# The snap certbot is the one that works on this VM; the apt one is broken by a Python library.
+CERTBOT="$( [ -x /snap/bin/certbot ] && echo /snap/bin/certbot || echo certbot )"
+"$CERTBOT" certonly --webroot -w /var/www/acme --non-interactive --agree-tos --keep-until-expiring --expand --cert-name "$FIRST_HOST" $(printf -- '-d %s ' $HOSTS) 2>&1 | tail -2
+full_site
 rm -f /tmp/routepay-bot.service /tmp/routepay-web.service /tmp/nginx-routepay.conf
 echo "Set up. Now: bash deploy/redeploy.sh"
 EOF

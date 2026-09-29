@@ -51,4 +51,4 @@ systemctl restart routepay-bot routepay-web
 sleep 3
 systemctl is-active routepay-bot routepay-web
 EOF
-echo "Deployed. https://routepay.65-20-103-177.sslip.io"
+echo "Deployed. https://routepay.dev"

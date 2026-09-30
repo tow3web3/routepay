@@ -4,13 +4,12 @@
 // the topic and the answer side by side in one frame, like a reference manual.
 // On a narrow one the same content folds into a list that opens in place.
 // An answer that names a stock, a token or a platform shows its logo inline.
-import { Fragment, useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import StockLogo from './StockLogo';
-import { Arrow, Back, CaretDown, PlatformIcon, Telegram } from './Icons';
+import Rich from './Rich';
+import { Arrow, Back, CaretDown, Telegram } from './Icons';
 import { BRAND, COMMUNITY_URL } from '../lib/brand';
-import { STOCKS, LIQUID_TICKERS, getStock } from '../lib/stocks';
+import { STOCKS, LIQUID_TICKERS } from '../lib/stocks';
 
 const EASE = [0.16, 1, 0.3, 1];
 const N = STOCKS.length;
@@ -69,33 +68,7 @@ const ALL = TOPICS.flatMap((t) => t.items.map((it) => ({ ...it, topic: t.key, to
 const FIRST = Object.fromEntries(TOPICS.map((t) => [t.key, ALL.findIndex((x) => x.topic === t.key)]));
 const num = (i) => String(i + 1).padStart(2, '0');
 
-function Inline({ kind, value, text }) {
-  if (kind === 's') {
-    const stock = getStock(value);
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap align-baseline font-medium text-ink">
-        <StockLogo address={stock ? stock.address : null} size="h-[1.05em] w-[1.05em]" text="text-[5px]" />{value}
-      </span>
-    );
-  }
-  if (kind === 'p') {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap align-baseline font-medium text-ink">
-        <PlatformIcon platform={value} className="h-[0.95em] w-[0.95em]" />{text}
-      </span>
-    );
-  }
-  if (kind === 'l') return <Link href={value} className="font-medium text-hood-600 underline decoration-hood-300 underline-offset-4 transition-colors hover:text-hood-700">{text}</Link>;
-  return <code className="whitespace-nowrap rounded border border-line bg-tile px-1 py-px font-mono text-[0.82em] text-ink">{value}</code>;
-}
-
-function Answer({ text }) {
-  const parts = text.split(/(\{[splc]:[^}]+\})/g);
-  return parts.map((part, i) => {
-    const m = part.match(/^\{([splc]):([^}|]+)(?:\|([^}]+))?\}$/);
-    return m ? <Inline key={i} kind={m[1]} value={m[2]} text={m[3] || m[2]} /> : <Fragment key={i}>{part}</Fragment>;
-  });
-}
+const Answer = ({ text }) => <Rich text={text} />;
 
 export default function FAQ() {
   const [cur, setCur] = useState(0);

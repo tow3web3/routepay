@@ -171,6 +171,7 @@ function CycleLinks({ e, hashes = false }) {
     <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 font-mono text-[11px]">
       <Link href={`/receipt/${e.id}`} className="text-hood-600 transition-colors hover:text-hood-700">receipt</Link>
       {e.swapTx && <Out href={explorerTx(e.swapTx)} className="text-mut">{hashes ? `swap ${short(e.swapTx)}` : 'swap'}</Out>}
+      {e.burnTx && <Out href={explorerTx(e.burnTx)} className="text-orange-400">{hashes ? `burn ${short(e.burnTx)}` : 'burn'}</Out>}
       {e.txHash && <Out href={explorerTx(e.txHash)} className="text-mut">{hashes ? `payout ${short(e.txHash)}` : 'payout'}</Out>}
     </span>
   );
@@ -561,6 +562,13 @@ export default function TokenDashboard() {
                       <span className="figure text-lg font-medium text-ink">{amount(units(latest.totalAirdropped, latest.rewardDecimals ?? rewardDecimals))} {describeAddress(latest.rewardToken, { symbol: latest.rewardSymbol }).symbol}</span>
                       {latest.destination === 'burn' ? <span>burned</span> : <span>to {latest.holderCount} holders</span>}
                     </div>
+                    {BigInt(latest.burnAmount || 0) > 0n && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-mut">
+                        <StockLogo address={src.address} meta={src} size="h-6 w-6" text="text-[7px]" />
+                        <span className="figure text-lg font-medium text-orange-400">{amount(units(latest.burnAmount, 18))} ${src.symbol || ''}</span>
+                        <span>bought back and burned</span>
+                      </div>
+                    )}
                     {latest.note && <div className="mt-2 text-xs text-gold-400">{latest.note}</div>}
                   </div>
                   <div className="sm:text-right">
@@ -584,6 +592,7 @@ export default function TokenDashboard() {
                           <StockLogo address={e.rewardToken} meta={{ symbol: e.rewardSymbol }} size="h-4 w-4" text="text-[5px]" />
                           <span className="figure text-ink">{amount(units(e.totalAirdropped, e.rewardDecimals ?? rewardDecimals))} {r.symbol}</span>
                           <span className="truncate">{e.destination === 'burn' ? 'burned' : `to ${e.holderCount} holders`}</span>
+                          {BigInt(e.burnAmount || 0) > 0n && <span className="shrink-0 text-orange-400" title="bought back and burned">· {amount(units(e.burnAmount, 18))} burned</span>}
                           {e.note && <span className="shrink-0 text-gold-400" title={e.note}>· note</span>}
                         </span>
                         <span className="sm:order-4"><CycleLinks e={e} /></span>

@@ -200,6 +200,7 @@ export async function getDashboard(address) {
       SELECT el.id, el.claimed_eth_wei::text AS claimed_eth_wei, el.bought_token_amount::text AS bought_token_amount,
              el.total_airdropped::text AS total_airdropped, el.holder_count, el.execution_time, el.status,
              el.reward_token_used, el.reward_mode_used, el.destination, el.swap_tx, el.error_message,
+             COALESCE(el.burn_amount, 0)::text AS burn_amount, el.burn_tx,
              (SELECT at.tx_hash FROM airdrop_transactions at WHERE at.execution_log_id = el.id AND at.status = 'success' AND at.tx_hash IS NOT NULL LIMIT 1) AS tx_hash
       FROM execution_logs el JOIN bot_configs bc ON el.config_id = bc.id
       WHERE bc.source_token_address = ${addr} AND el.status = 'success' AND el.holder_count > 0

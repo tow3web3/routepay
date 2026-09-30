@@ -108,6 +108,9 @@ export async function GET(request, { params }) {
         rewardMode: e.reward_mode_used || null,
         destination: e.destination || 'holders',
         note: e.error_message || null,
+        // The buyback of this cycle: tokens bought and burned, and the burn transaction.
+        burnAmount: e.burn_amount || '0',
+        burnTx: e.burn_tx || null,
       })),
       config: {
         intervalMinutes: config.interval_minutes,

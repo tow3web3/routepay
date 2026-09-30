@@ -8,8 +8,9 @@ import Logo from './Logo';
 import CopyCA from './CopyCA';
 import { BRAND, X_URL, COMMUNITY_URL, GITHUB_URL, TOKEN, TOKEN_CA } from '../lib/brand';
 
-const MAIN = [['Pages', '/pages'], ['Claim', '/claim'], ['How it works', '/#how'], ['Stocks', '/stocks']];
+const MAIN = [['Pages', '/pages'], ['Claim', '/claim'], ['Guide', '/guide'], ['Stocks', '/stocks']];
 const MORE = [
+  ['How it works', '/#how', 'The route, from fees in to every payout'],
   ['My payouts', '/wallet', 'What a wallet received, as a statement'],
   ['Token check', '/#check', 'Does a coin route its fees here'],
   ['Vote', '/vote', 'Holders choose the next payout asset'],

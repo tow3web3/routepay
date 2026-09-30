@@ -5,7 +5,7 @@ import { BRAND, TAGLINE, X_URL, COMMUNITY_URL, GITHUB_URL } from '../lib/brand';
 
 const COLUMNS = [
   { title: 'Product', links: [['Dashboard', '/app'], ['Pages', '/pages'], ['Claim fees', '/claim'], ['Stocks', '/stocks'], ['My payouts', '/wallet']] },
-  { title: 'Learn', links: [['How it works', '/#how'], ['Destinations', '/#destinations'], ['FAQ', '/#faq'], ['API', '/#developers']] },
+  { title: 'Learn', links: [['Guide', '/guide'], ['How it works', '/#how'], ['Destinations', '/#destinations'], ['FAQ', '/#faq'], ['API', '/#developers']] },
   { title: 'Chain', links: [['Blockscout', 'https://robinhoodchain.blockscout.com'], ['Uniswap', 'https://app.uniswap.org'], ['DexScreener', 'https://dexscreener.com/robinhood']] },
 ];
 

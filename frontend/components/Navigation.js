@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Arrow, X, Github } from './Icons';
 import Logo from './Logo';
 import CopyCA from './CopyCA';
-import { BRAND, X_URL, COMMUNITY_URL, GITHUB_URL, TOKEN, TOKEN_CA } from '../lib/brand';
+import { BRAND, X_URL, COMMUNITY_URL, GITHUB_URL, BOT_URL, BOT_USERNAME, TOKEN, TOKEN_CA } from '../lib/brand';
 
 const MAIN = [['Pages', '/pages'], ['Claim', '/claim'], ['Guide', '/guide'], ['Stocks', '/stocks']];
 const MORE = [
@@ -68,6 +68,12 @@ export default function Navigation() {
           <CopyCA className="mr-2 hidden xl:inline-flex" />
           {X_URL && <a href={X_URL} target="_blank" rel="noopener noreferrer" aria-label={`${BRAND} on X`} className="hidden h-8 w-8 items-center justify-center rounded-lg text-mut transition-colors hover:text-ink sm:flex"><X className="h-[15px] w-[15px]" /></a>}
           {COMMUNITY_URL && <a href={COMMUNITY_URL} target="_blank" rel="noopener noreferrer" aria-label={`${BRAND} community on Telegram`} className="hidden h-8 w-8 items-center justify-center rounded-lg text-mut transition-colors hover:text-ink sm:flex"><Telegram className="h-4 w-4" /></a>}
+          {/* The bot: the remote of the product, one tap away from every page */}
+          {BOT_URL && (
+            <a href={BOT_URL} target="_blank" rel="noopener noreferrer" aria-label={`Open @${BOT_USERNAME} on Telegram`} title={`@${BOT_USERNAME}`} className="hidden h-8 items-center gap-1.5 rounded-lg border border-line px-2.5 text-xs font-semibold text-ink transition-colors hover:border-[#2AABEE] hover:text-[#2AABEE] sm:flex">
+              <Telegram className="h-4 w-4 text-[#2AABEE]" />Bot
+            </a>
+          )}
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label={`${BRAND} on GitHub`} className="hidden h-8 w-8 items-center justify-center rounded-lg text-mut transition-colors hover:text-ink sm:flex"><Github className="h-[17px] w-[17px]" /></a>
           <Link href="/app" className="btn-primary ml-2 whitespace-nowrap !px-3.5 !py-2 text-[13px]">Dashboard <Arrow className="h-3.5 w-3.5" /></Link>
         </div>

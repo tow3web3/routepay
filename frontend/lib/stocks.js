@@ -1,5 +1,6 @@
 // Stock Token registry for the site (mirrors backend/src/chain/stocks.js).
 import { STOCK_LIST } from './stocks-data';
+import { TOKEN_CA, TOKEN_SYMBOL } from './brand';
 
 const SECTOR_COLORS = {
   'Big Tech': '#1E88E5', Semis: '#7C4DFF', 'AI & Cloud': '#00ACC1', 'EV & Auto': '#FB8C00',
@@ -58,13 +59,16 @@ export function describeAddress(address, meta = null) {
   if (s) return { symbol: s.ticker, name: s.name, logo: s.logo, logos: [s.logo], color: s.color, isStock: true, isNative: false, sector: s.sector };
   const short = address ? `${address.slice(2, 6).toUpperCase()}` : '????';
   const valid = EVM_ADDR.test(String(address || ''));
+  const ours = Boolean(TOKEN_CA) && valid && String(address).toLowerCase() === TOKEN_CA.toLowerCase();
   const logos = [...new Set([
+    // The project token carries its own logo, served by the site: no screener needed.
+    ours ? `/logos/tokens/${TOKEN_SYMBOL}.png` : null,
     meta?.image || null,
     valid ? `https://dd.dexscreener.com/ds-data/tokens/robinhood/${String(address).toLowerCase()}.png?size=lg` : null,
     // Last resort: the site asks the screener and the explorer for the token's icon.
     valid ? `/api/logo/${String(address).toLowerCase()}` : null,
   ].filter(Boolean))];
-  return { symbol: meta?.symbol || short, name: meta?.name || 'Token', logo: logos[0] || null, logos, color: '#00C805', isStock: false, isNative: false };
+  return { symbol: ours ? TOKEN_SYMBOL : meta?.symbol || short, name: meta?.name || (ours ? 'ROUTEPAY' : 'Token'), logo: logos[0] || null, logos, color: ours ? '#C8FD3B' : '#00C805', isStock: false, isNative: false };
 }
 
 export const EXPLORER = 'https://robinhoodchain.blockscout.com';

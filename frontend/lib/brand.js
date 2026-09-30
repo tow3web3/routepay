@@ -25,6 +25,6 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@rou
 
 // The project token. Empty until it is live: every token feature (lottery,
 // missions, the live link) stays off while the address is missing.
-export const TOKEN_SYMBOL = (process.env.NEXT_PUBLIC_TOKEN_SYMBOL || 'ROUTEPAY').replace(/^\$/, '');
+export const TOKEN_SYMBOL = (process.env.NEXT_PUBLIC_TOKEN_SYMBOL || 'ROUTE').replace(/^\$/, '');
 export const TOKEN_CA = process.env.NEXT_PUBLIC_TOKEN_CA || '';
 export const TOKEN = `$${TOKEN_SYMBOL}`;

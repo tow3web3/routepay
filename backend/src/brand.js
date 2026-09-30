@@ -18,5 +18,5 @@ export const COMMUNITY_URL = process.env.COMMUNITY_URL || '';
 // of /burns and the lottery stay off while the address is missing.
 const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(String(a || ''));
 export const PROJECT_TOKEN = isAddr(process.env.PROJECT_TOKEN_ADDRESS) ? process.env.PROJECT_TOKEN_ADDRESS.toLowerCase() : null;
-export const TOKEN_SYMBOL = (process.env.PROJECT_TOKEN_SYMBOL || 'ROUTEPAY').replace(/^\$/, '');
+export const TOKEN_SYMBOL = (process.env.PROJECT_TOKEN_SYMBOL || 'ROUTE').replace(/^\$/, '');
 export const TOKEN = `$${TOKEN_SYMBOL}`;

@@ -104,6 +104,8 @@ export function initBot() {
 }
 
 export async function sendNotification(telegramId, message) {
+  // An account made on the web has no Telegram yet: nothing to send, nothing to log.
+  if (!telegramId) return;
   try {
     await bot.telegram.sendMessage(telegramId, message, { parse_mode: 'Markdown', disable_web_page_preview: true });
   } catch (error) {

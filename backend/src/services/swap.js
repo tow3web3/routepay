@@ -12,6 +12,7 @@ import {
   ZERO, WETH, USDG, UNIV2_ROUTER, UNIV3_SWAP_ROUTER02, UNIV4_QUOTER, UNIV4_ROUTER, UNIV4_POOL_MANAGER,
   explorerTx,
 } from '../chain/config.js';
+import { curveFor, quoteCurveGuarded, buyOnCurve } from './launchpad.js';
 
 export const MIN_FAIR_RATIO = parseFloat(process.env.MIN_SWAP_FAIR_RATIO || '0.9');
 // Memecoins priced by DexScreener: launchpad pools charge a hook fee on top of
@@ -314,6 +315,19 @@ async function executeRoute({ privateKey, token, amountWei, route, slippageBps }
  */
 export async function swapEthForToken({ privateKey, token, decimals, amountWei, slippageBps = 150, oracle = null }) {
   const { account } = walletFor(privateKey);
+  // A coin still on its PONS curve trades there and nowhere else: the curve is
+  // the market, and its own spot price is the fair reference.
+  if (oracle?.dex || oracle === null) {
+    const curve = await curveFor(token);
+    if (curve) {
+      const q = await quoteCurveGuarded({ curve, amountWei, recipient: account.address, minRatio: MIN_TOKEN_FAIR_RATIO });
+      if (!q) throw new Error('The PONS curve gave no quote');
+      if (q.rejected) throw new Error(`Price impact on the PONS curve too high: the buy would fill at ${(q.ratio * 100).toFixed(1)}% of spot`);
+      console.log(`   Route: PONS curve ${curve.slice(0, 8)}… at ${(q.ratio * 100).toFixed(1)}% of spot, expecting ${q.out.toString()} raw`);
+      const result = await buyOnCurve({ privateKey, token, curve, amountWei, expectedOut: q.out, slippageBps: Math.max(slippageBps, 300) });
+      return { ...result, route: 'PONS curve', ratio: q.ratio };
+    }
+  }
   let fairOut = null;
   if (oracle?.stockUsd > 0 && oracle?.ethUsd > 0) {
     const fairTokens = (Number(amountWei) / 1e18) * (oracle.ethUsd / oracle.stockUsd);

@@ -9,7 +9,7 @@ import { motion, useInView } from 'motion/react';
 import PolicyMini from './PolicyMini';
 import StockLogo from './StockLogo';
 import Countdown from './Countdown';
-import { Arrow, Vote } from './Icons';
+import { Arrow, Vote, Copy, Check, External } from './Icons';
 import { BRAND, TOKEN_CA, TOKEN_SYMBOL } from '../lib/brand';
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -74,8 +74,60 @@ export default function TokenLive() {
     const t = setInterval(load, 60_000);
     return () => { alive = false; clearInterval(t); };
   }, []);
-  if (!TOKEN_CA || !data) return null;
-  return <Live data={data} />;
+  if (!TOKEN_CA) return null;
+  // The address is shown from the first minute, before the coin is even linked; the live routing joins it once it is.
+  return (
+    <div id="token" className="scroll-mt-20 space-y-6">
+      <TokenCard data={data} />
+      {data && <Live data={data} />}
+    </div>
+  );
+}
+
+/**
+ * The card of the project token: its logo, the full contract address ready to
+ * copy, and where to buy it, chart it and read its contract. Always present
+ * once the address is set: it is what people come to the homepage for on
+ * launch day.
+ */
+function TokenCard({ data }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(TOKEN_CA); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard unavailable */ }
+  };
+  const sym = data?.sourceToken?.symbol || TOKEN_SYMBOL;
+  const links = [
+    ['Chart and buy', `https://dexscreener.com/robinhood/${TOKEN_CA}`],
+    ['Contract', `https://robinhoodchain.blockscout.com/token/${TOKEN_CA}`],
+  ];
+  return (
+    <div className="frame relative overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-hood-500/10 blur-3xl" />
+      <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+        <div className="flex items-center gap-4">
+          <StockLogo address={TOKEN_CA} meta={{ symbol: sym }} size="h-16 w-16" text="text-sm" />
+          <div>
+            <div className="eyebrow">The token</div>
+            <div className="mt-1 font-display text-3xl font-semibold tracking-tight text-ink">${sym}</div>
+            <div className="mt-0.5 text-sm text-mut">on Robinhood Chain</div>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <div className="label mb-1.5">Contract address</div>
+          <button type="button" onClick={copy} title="Copy the address" className="group flex w-full items-center justify-between gap-3 rounded-xl border border-line bg-ground px-4 py-3 text-left transition hover:border-hood-400">
+            <span className="min-w-0 truncate font-mono text-sm text-ink sm:text-[15px]">{TOKEN_CA}</span>
+            <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-mut group-hover:text-hood-600">{copied ? <><Check className="h-4 w-4 text-hood-500" />Copied</> : <><Copy className="h-4 w-4" />Copy</>}</span>
+          </button>
+          <p className="mt-2 text-xs text-mut">Check the address here before you buy: this page is the only source.</p>
+        </div>
+        <div className="flex flex-wrap gap-2 lg:flex-col">
+          {links.map(([label, href]) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" className={`${label === 'Chart and buy' ? 'btn-primary' : 'btn-ghost'} whitespace-nowrap`}>{label}<External className="h-3.5 w-3.5" /></a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Mounted once the data is there, so the entrance is tied to an element that exists.
@@ -87,7 +139,7 @@ function Live({ data }) {
   const active = data.config.isActive !== false;
 
   return (
-    <div id="token" ref={ref} className="scroll-mt-20">
+    <div ref={ref}>
       <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="eyebrow mb-2">We route our own fees</div>

@@ -29,11 +29,12 @@ export default function Home() {
 
       <div className="mx-auto max-w-6xl space-y-24 px-5 py-24">
         <Reveal><StatsBar /></Reveal>
+        {/* The token, right under the numbers: the first thing a launch-day visitor looks for */}
+        <Reveal><TokenLive /></Reveal>
         <Reveal><Destinations /></Reveal>
         <Reveal><TopPages /></Reveal>
         <Reveal><HowItWorks /></Reveal>
         <Why />
-        <Reveal><TokenLive /></Reveal>
         <Reveal><Modes /></Reveal>
         <Reveal><Peeks /></Reveal>
         <Reveal><TokenSearch /></Reveal>

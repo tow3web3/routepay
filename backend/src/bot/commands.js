@@ -178,8 +178,8 @@ async function startFromToken(ctx, token, link) {
   });
   const via = link?.launchpad_name ? ' (via ' + link.launchpad_name + ')' : '';
   await ctx.replyWithMarkdown(
-    '🔀 *Set up routing for $' + meta.symbol + '*' + via + '\n\n' +
-    'Token: *' + meta.name + '* `' + short(token) + '`\n\n' +
+    '🔀 *Set up routing for $' + mdEscape(meta.symbol) + '*' + via + '\n\n' +
+    'Token: *' + mdEscape(meta.name) + '* `' + short(token) + '`\n\n' +
     BRAND + " needs your dev wallet's *private key* to collect fees and pay holders. Use a *dedicated wallet*, never your main one. " +
     'Your key is encrypted immediately (AES-256) and the message is deleted right after.\n\nUnderstood?',
     keyboards.warningConfirmationKeyboard()
@@ -290,7 +290,7 @@ async function handlePrivateKeyInput(ctx, session, privateKey) {
     session.data.sourceToken = pre.token;
     session.data.sourceMeta = pre.meta;
     try { session.data.positionIds = await discoverPositions(publicKey, pre.token); } catch { session.data.positionIds = []; }
-    const head = '✅ Key received and encrypted.\n📍 Wallet: `' + publicKey + '`' + balanceLine + gateLine + walletNote + '\n\n💎 Token: *' + pre.meta.name + '* ($' + pre.meta.symbol + ')';
+    const head = '✅ Key received and encrypted.\n📍 Wallet: `' + publicKey + '`' + balanceLine + gateLine + walletNote + '\n\n💎 Token: *' + mdEscape(pre.meta.name) + '* ($' + mdEscape(pre.meta.symbol) + ')';
     if (pre.feeSource === 'wallet' || pre.feeSource === 'univ3') {
       session.data.feeSource = pre.feeSource;
       session.step = 'reward';
@@ -326,7 +326,7 @@ async function handleSourceTokenInput(ctx, session, address) {
   } catch { /* RPC hiccup */ }
 
   await ctx.replyWithMarkdown(
-    `✅ Token: *${meta.name}* ($${meta.symbol})${positionsLine}\n\n` +
+    `✅ Token: *${mdEscape(meta.name)}* ($${mdEscape(meta.symbol)})${positionsLine}\n\n` +
     `💰 *Step 3 of 5: where do your fees come from?*\n\n` +
     `💼 *Wallet*: ${FEE_SOURCES.wallet.hint}\n🦄 *Uniswap V3*: ${FEE_SOURCES.univ3.hint}\n\n_Stock tokens in the wallet are always swept, whichever you pick._`,
     keyboards.feeSourceKeyboard()
@@ -362,7 +362,7 @@ async function resolveRewardInput(text) {
       if (!quoted) liquidity = ' ⚠️ no Uniswap route found yet: holders would receive ETH until a pool exists';
       else liquidity = ` · route ${quoted.route.label}${oracle?.liquidityUsd ? `, $${Math.round(oracle.liquidityUsd).toLocaleString('en-US')} liquidity` : ''}`;
     } catch { liquidity = ''; }
-    return { address: t, label: `${meta.symbol} (${meta.name})${liquidity}` };
+    return { address: t, label: `${mdEscape(meta.symbol)} (${mdEscape(meta.name)})${liquidity}` };
   }
   throw new Error(`Unknown ticker "${t}". Send one of the 195 Robinhood stock tickers, ETH, or a token address.`);
 }
@@ -409,7 +409,7 @@ export async function handleIntervalSelection(ctx, pick) {
   await edit(ctx,
     `📋 *Review your policy*\n\n` +
     `🔐 Wallet: \`${short(session.data.publicKey)}\`\n` +
-    `💎 Your token: $${session.data.sourceMeta.symbol} \`${short(session.data.sourceToken)}\`\n` +
+    `💎 Your token: $${mdEscape(session.data.sourceMeta.symbol)} \`${short(session.data.sourceToken)}\`\n` +
     `💰 Fees: ${FEE_SOURCES[session.data.feeSource].label}\n` +
     `📈 Reward: ${session.data.targetLabel}\n` +
     `⏱️ Schedule: ${label}\n\nActivate now?`,
@@ -637,7 +637,8 @@ export async function handleTogglePayoutMode(ctx) {
 
 export async function handleSplitMenu(ctx) {
   const { config } = await getUserConfig(ctx.from.id);
-  if (!config) return ctx.answerCbQuery('No config found.');
+  // Reached by the /routing command too, where there is no callback to answer.
+  if (!config) { if (ctx.callbackQuery) await ctx.answerCbQuery(); return ctx.replyWithMarkdown('You have no coin set up yet. Start with /setup, or open the canvas.', keyboards.welcomeKeyboard()); }
   await edit(ctx, splitText(config), keyboards.splitKeyboard(config, SPLIT_PRESETS, currentPresetKey(config)));
 }
 

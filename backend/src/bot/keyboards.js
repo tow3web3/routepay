@@ -7,13 +7,15 @@ import { SITE_URL, SITE_HOST, X_HANDLE, X_URL, COMMUNITY_URL } from '../brand.js
 const WEBSITE = SITE_URL;
 const DASHBOARD = `${WEBSITE}/app`;
 const COMMUNITY = COMMUNITY_URL;
+// Telegram refuses a link button without a link: no community set, no button.
+const community = (label) => (COMMUNITY ? [Markup.button.url(label, COMMUNITY)] : []);
 
 export function welcomeKeyboard() {
   return Markup.inlineKeyboard([
     [Markup.button.url('🧭 Open the canvas', DASHBOARD)],
     [Markup.button.callback('🚀 Guided setup here', 'setup')],
     [Markup.button.callback('📖 How it works', 'how'), Markup.button.callback('❓ FAQ', 'faq')],
-    [Markup.button.callback('📈 Stocks', 'stocks'), ...(COMMUNITY ? [Markup.button.url('💬 Community', COMMUNITY)] : [])],
+    [Markup.button.callback('📈 Stocks', 'stocks'), ...community('💬 Community')],
     [...(X_URL ? [Markup.button.url(`𝕏 @${X_HANDLE}`, X_URL)] : []), Markup.button.url(`🌐 ${SITE_HOST}`, WEBSITE)],
   ]);
 }
@@ -26,14 +28,14 @@ export function dashboardKeyboard(config) {
     [Markup.button.callback('🎛️ Reward mode', 'reward_mode'), Markup.button.callback('⏱️ Schedule', 'change_interval')],
     [Markup.button.callback('📣 Receipts in a group', 'announce_help'), Markup.button.callback('⚙️ Settings', 'settings')],
     [toggle, Markup.button.url('🧭 Open the canvas', DASHBOARD)],
-    [Markup.button.callback('❓ Help', 'help'), Markup.button.url('💬 Community', COMMUNITY)],
+    [Markup.button.callback('❓ Help', 'help'), ...community('💬 Community')],
   ]);
 }
 
 export function helpKeyboard() {
   return Markup.inlineKeyboard([
     [Markup.button.callback('📖 How it works', 'how'), Markup.button.callback('❓ FAQ', 'faq')],
-    [Markup.button.url('🧭 Open the canvas', DASHBOARD), Markup.button.url('💬 Community', COMMUNITY)],
+    [Markup.button.url('🧭 Open the canvas', DASHBOARD), ...community('💬 Community')],
     [Markup.button.callback('⬅️ Menu', 'menu')],
   ]);
 }
@@ -52,7 +54,7 @@ export function faqKeyboard(page, total) {
   if (page < total) nav.push(Markup.button.callback('Next ➡️', `faq_${page + 1}`));
   return Markup.inlineKeyboard([
     nav,
-    [Markup.button.callback('📖 How it works', 'how'), Markup.button.url('💬 Ask the community', COMMUNITY)],
+    [Markup.button.callback('📖 How it works', 'how'), ...community('💬 Ask the community')],
     [Markup.button.callback('⬅️ Menu', 'menu')],
   ].filter((r) => r.length));
 }
@@ -63,7 +65,7 @@ export function dashboardLinkKeyboard() {
 
 export function communityKeyboard() {
   // Telegram refuses a button without a URL: an account that is not set has no button.
-  const links = [...(COMMUNITY ? [Markup.button.url('💬 Telegram', COMMUNITY)] : []), ...(X_URL ? [Markup.button.url(`𝕏 @${X_HANDLE}`, X_URL)] : []), Markup.button.url(`🌐 ${SITE_HOST}`, WEBSITE)];
+  const links = [...community('💬 Telegram'), ...(X_URL ? [Markup.button.url(`𝕏 @${X_HANDLE}`, X_URL)] : []), Markup.button.url(`🌐 ${SITE_HOST}`, WEBSITE)];
   return Markup.inlineKeyboard([links, [Markup.button.callback('⬅️ Menu', 'menu')]]);
 }
 

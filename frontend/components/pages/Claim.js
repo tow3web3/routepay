@@ -104,6 +104,61 @@ function Result({ p, busy, wallet, onClaim }) {
   );
 }
 
+/**
+ * Proving a phone number: the number, the channel, a code. Once the code is
+ * right the number is proved for this browser and the claim goes on as usual.
+ */
+function PhoneConnect({ onProved }) {
+  const [number, setNumber] = useState('');
+  const [channel, setChannel] = useState('whatsapp');
+  const [sent, setSent] = useState(null); // { masked, channel }
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const valid = Boolean(normalizeHandle('phone', number));
+
+  async function call(body) {
+    setBusy(true); setError(null);
+    try {
+      const res = await fetch('/api/claim/phone', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Something went wrong');
+      return d;
+    } catch (e) {
+      setError(e.message);
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+  const send = async () => { const d = await call({ number, channel }); if (d) { setSent({ masked: d.masked, channel: d.channel }); setCode(''); } };
+  const check = async () => { const d = await call({ number, code }); if (d) onProved(); };
+
+  return (
+    <div>
+      <p className="text-sm text-mut">A number has no sign-in: it is proved with a code. Write it with its country code; the code goes to that number and nowhere else. The number is shown in part on the site, never in full.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <input value={number} onChange={(e) => { setNumber(e.target.value); setSent(null); }} inputMode="tel" autoComplete="tel" placeholder="+33 6 12 34 56 78" className="min-w-0 flex-1 rounded-xl border border-line bg-ground px-4 py-2.5 font-mono text-sm text-ink outline-none transition placeholder:text-mut/60 focus:border-hood-400" />
+        <div className="flex overflow-hidden rounded-xl border border-line">
+          {[['whatsapp', 'WhatsApp'], ['sms', 'SMS']].map(([k, label]) => (
+            <button key={k} type="button" onClick={() => setChannel(k)} className={`px-3.5 py-2.5 text-sm font-semibold transition ${channel === k ? 'bg-ink text-coal' : 'bg-ground text-mut hover:text-ink'}`}>{label}</button>
+          ))}
+        </div>
+        <button type="button" onClick={send} disabled={!valid || busy} className="btn-ink disabled:cursor-not-allowed disabled:opacity-50">{busy && !sent ? 'Sending…' : sent ? 'Send again' : 'Send the code'}</button>
+      </div>
+      {number && !valid && <p className="mt-1.5 text-xs text-red-600">Write the number with its country code, for example +33 6 12 34 56 78.</p>}
+      {sent && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-hood-300 bg-hood-50 p-3">
+          <span className="flex-1 text-sm text-ink">A 6-digit code was sent by {sent.channel === 'sms' ? 'SMS' : 'WhatsApp'} to <span className="font-mono">{sent.masked}</span>.</span>
+          <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} onKeyDown={(e) => { if (e.key === 'Enter' && code.length === 6) check(); }} inputMode="numeric" autoComplete="one-time-code" placeholder="123456" className="w-32 rounded-xl border border-line bg-ground px-3 py-2 text-center font-mono text-base tracking-[0.3em] text-ink outline-none focus:border-hood-400" />
+          <button type="button" onClick={check} disabled={code.length !== 6 || busy} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Checking…' : 'Confirm'}</button>
+        </div>
+      )}
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
 /** The picture of a connected account, small. One that does not load leaves the name alone. */
 function Face({ p }) {
   const [gone, setGone] = useState(false);
@@ -160,7 +215,7 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
   // One click: a platform that can connect goes straight to its sign-in.
   const pick = (k) => {
     setError(null); setRecord(null);
-    if (k !== 'domain' && state?.platforms?.[k] && !connected(k)) { setBusy(`connect:${k}`); window.location.assign(connectUrl(k)); return; }
+    if (k !== 'domain' && k !== 'phone' && state?.platforms?.[k] && !connected(k)) { setBusy(`connect:${k}`); window.location.assign(connectUrl(k)); return; }
     setPlatform(k);
   };
 
@@ -239,7 +294,7 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
                   {mine.length ? (owed > 0 ? <span className="figure rounded-full bg-hood-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-coal">{fmtUsd(owed)}</span> : <Check className="h-3.5 w-3.5 text-hood-500" />) : <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-hood-500' : 'bg-line'}`} />}
                 </span>
                 <span className="text-sm font-semibold text-ink">{PLATFORMS[k].label}</span>
-                <span className="label !text-[9.5px]">{busy === `connect:${k}` ? 'opening…' : mine.length ? 'connected as' : k === 'domain' ? 'DNS record' : on ? 'connect' : 'soon'}</span>
+                <span className="label !text-[9.5px]">{busy === `connect:${k}` ? 'opening…' : mine.length ? 'connected as' : k === 'domain' ? 'DNS record' : k === 'phone' ? (on ? 'code by WhatsApp' : 'soon') : on ? 'connect' : 'soon'}</span>
                 {mine.length > 0 && (
                   <span className="-mt-1 flex w-full min-w-0 items-center gap-1.5">
                     <Face p={mine[0]} />
@@ -269,6 +324,8 @@ export default function Claim({ initialPlatform = null, initialHandle = '', init
                 </span>
               </div>
             </>
+          ) : enabled && platform === 'phone' ? (
+            <PhoneConnect onProved={load} />
           ) : enabled ? (
             <>
               <a href={connectUrl(platform)} className="btn-ink">

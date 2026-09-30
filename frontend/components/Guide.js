@@ -83,7 +83,7 @@ function Platforms() {
           <PlatformIcon platform={k} className="h-6 w-6" />
           <div className="mt-2 text-sm font-semibold text-ink">{PLATFORMS[k].label}</div>
           <div className="font-mono text-[10.5px] text-mut">{PLATFORMS[k].placeholder}</div>
-          <div className="label mt-2 !text-[9.5px]">{k === 'domain' ? 'DNS record' : 'sign-in'}</div>
+          <div className="label mt-2 !text-[9.5px]">{k === 'domain' ? 'DNS record' : k === 'phone' ? 'code by WhatsApp or SMS' : 'sign-in'}</div>
         </li>
       ))}
     </ul>

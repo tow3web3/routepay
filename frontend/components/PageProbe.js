@@ -12,10 +12,10 @@ import { PLATFORMS, PLATFORM_KEYS, parsePage, pageName, pagePath, pageAvatar } f
 const EASE = [0.16, 1, 0.3, 1];
 // How long the typing must stop before the page is looked up.
 const SETTLE = 900;
-const HINTS = ['youtube.com/@channel', 'github.com/project', 'x.com/handle', 'yoursite.com', 'twitch.tv/channel', 'instagram.com/handle'];
+const HINTS = ['youtube.com/@channel', 'github.com/project', 'x.com/handle', 'yoursite.com', '+33 6 12 34 56 78', 'twitch.tv/channel', 'instagram.com/handle'];
 
 // What a click on a platform writes in the field: the start of its address, ready for the name.
-const PREFIX = { youtube: 'youtube.com/@', github: 'github.com/', x: 'x.com/', instagram: 'instagram.com/', facebook: 'facebook.com/', tiktok: 'tiktok.com/@', twitch: 'twitch.tv/', domain: '' };
+const PREFIX = { youtube: 'youtube.com/@', github: 'github.com/', x: 'x.com/', instagram: 'instagram.com/', facebook: 'facebook.com/', tiktok: 'tiktok.com/@', twitch: 'twitch.tv/', domain: '', phone: '+' };
 const startOf = (raw) => PLATFORM_KEYS.find((k) => PREFIX[k] && raw.toLowerCase() === PREFIX[k]);
 
 export default function PageProbe() {
@@ -109,7 +109,7 @@ export default function PageProbe() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href={pagePath(page.platform, page.handle)} className="text-xs font-semibold text-mut transition-colors hover:text-ink">Profile</Link>
+                {(page.platform !== 'phone' || state.info?.path) && <Link href={state.info?.path || pagePath(page.platform, page.handle)} className="text-xs font-semibold text-mut transition-colors hover:text-ink">Profile</Link>}
                 <Link href="/app" className="btn-primary !px-3.5 !py-2 text-xs">Route fees to it <Arrow className="h-3.5 w-3.5" /></Link>
               </div>
             </motion.div>

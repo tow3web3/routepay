@@ -23,7 +23,10 @@ const EXPLORER = 'https://robinhoodchain.blockscout.com';
 async function resolve(params) {
   const { platform, handle: raw } = await params;
   if (!PLATFORMS[platform]) return null;
-  const handle = normalizeHandle(platform, decodeURIComponent(raw));
+  const given = decodeURIComponent(raw);
+  // A phone page lives at its slug; the number itself is never in an address.
+  if (platform === 'phone') return /^[a-z0-9]{12}$/.test(given) ? { platform, handle: given, slug: given } : null;
+  const handle = normalizeHandle(platform, given);
   return handle ? { platform, handle } : null;
 }
 
@@ -34,7 +37,7 @@ export async function generateMetadata({ params }) {
   return pageMeta({
     title: `${name} on ${PLATFORMS[r.platform].label}`,
     description: `Fees routed to ${name} by coins on Robinhood Chain: what it received, what waits in its vault, and how its owner claims.`,
-    path: pagePath(r.platform, r.handle),
+    path: pagePath(r.platform, r.handle, r.slug),
   });
 }
 
@@ -61,8 +64,8 @@ export default async function PageProfile({ params }) {
     error = e.message;
   }
   const P = PLATFORMS[r.platform];
-  const page = view || { platform: r.platform, handle: r.handle, name: pageName(r.platform, r.handle), avatar: null, url: pageUrl(r.platform, r.handle), path: pagePath(r.platform, r.handle), claimed: false };
-  const claimHref = `/claim?${new URLSearchParams({ platform: r.platform, handle: r.handle })}`;
+  const page = view || { platform: r.platform, handle: r.handle, name: pageName(r.platform, r.handle), avatar: null, url: pageUrl(r.platform, r.handle), path: pagePath(r.platform, r.handle, r.slug), claimed: false };
+  const claimHref = `/claim?${new URLSearchParams(r.platform === 'phone' ? { platform: 'phone' } : { platform: r.platform, handle: r.handle })}`;
   const waiting = view && !view.claimed ? view.vaultBalance?.totalUsd || 0 : 0;
 
   return (
@@ -79,9 +82,13 @@ export default async function PageProfile({ params }) {
               <h1 className="truncate font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{page.name}</h1>
               {view && <ClaimBadge claimed={view.claimed} />}
             </div>
-            <a href={page.url} target="_blank" rel="noopener noreferrer nofollow" className="mt-1 inline-flex items-center gap-1.5 text-sm text-mut hover:text-ink">
-              <PlatformIcon platform={r.platform} className="h-3.5 w-3.5" />{P.label} {P.noun} · {page.url.replace(/^https:\/\/(www\.)?/, '')} ↗
-            </a>
+            {page.url ? (
+              <a href={page.url} target="_blank" rel="noopener noreferrer nofollow" className="mt-1 inline-flex items-center gap-1.5 text-sm text-mut hover:text-ink">
+                <PlatformIcon platform={r.platform} className="h-3.5 w-3.5" />{P.label} {P.noun} · {page.url.replace(/^https:\/\/(www\.)?/, '')} ↗
+              </a>
+            ) : (
+              <span className="mt-1 inline-flex items-center gap-1.5 text-sm text-mut"><PlatformIcon platform={r.platform} className="h-3.5 w-3.5" />{P.label} {P.noun} · shown in part, its owner proves it with a code</span>
+            )}
           </div>
           {!page.claimed && <Link href={claimHref} className="btn-primary">This is my page <Arrow className="h-4 w-4" /></Link>}
         </div>
@@ -105,7 +112,7 @@ export default async function PageProfile({ params }) {
               <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gold-300 bg-gold-50 px-5 py-4">
                 <div>
                   <div className="text-sm font-semibold text-gold-700">{waiting > 0 ? `${fmtUsd(waiting)} is waiting for the owner of this page` : 'This page has not been claimed'}</div>
-                  <p className="mt-0.5 text-sm text-mut">Sign in with {P.proof === 'dns' ? 'a DNS record on the domain' : P.label}, connect a wallet, and the vault is sent to it.</p>
+                  <p className="mt-0.5 text-sm text-mut">{P.proof === 'dns' ? 'Add a DNS record on the domain' : P.proof === 'otp' ? 'Prove the number with a code sent by WhatsApp or SMS' : `Sign in with ${P.label}`}, connect a wallet, and the vault is sent to it.</p>
                 </div>
                 <Link href={claimHref} className="btn-primary !py-2 text-xs">Claim <Arrow className="h-3.5 w-3.5" /></Link>
               </div>

@@ -128,7 +128,9 @@ export function credentials(provider) {
 }
 export const isEnabled = (provider) => Boolean(credentials(provider));
 /** platform -> true when its sign-in is configured. Domains prove themselves with DNS, always available. */
-export const enabledPlatforms = () => Object.fromEntries([...Object.keys(PROVIDERS).map((k) => [k, isEnabled(k)]), ['domain', true]]);
+export const enabledPlatforms = () => Object.fromEntries([...Object.keys(PROVIDERS).map((k) => [k, isEnabled(k)]), ['domain', true], ['phone', Boolean(env('TWILIO_ACCOUNT_SID') && env('TWILIO_AUTH_TOKEN') && env('TWILIO_VERIFY_SID'))]]);
+// Every platform that keeps an identity cookie: the sign-ins, and the phone (proved by a code).
+const IDENTITY_PLATFORMS = [...Object.keys(PROVIDERS), 'phone'];
 export const redirectUri = (provider) => `${SITE_URL}/api/oauth/${provider}/callback`;
 
 /* ---------------- signed cookies ---------------- */
@@ -231,7 +233,7 @@ export async function complete(provider, { code, state }) {
 export async function readIdentities() {
   const jar = await cookies();
   const all = {};
-  for (const k of Object.keys(PROVIDERS)) {
+  for (const k of IDENTITY_PLATFORMS) {
     const ids = unseal(jar.get(identCookie(k))?.value)?.ids;
     if (ids?.length) all[k] = ids;
   }
@@ -240,7 +242,13 @@ export async function readIdentities() {
 
 export async function forgetIdentities() {
   const jar = await cookies();
-  for (const k of Object.keys(PROVIDERS)) jar.set(identCookie(k), '', cookieOpts(0));
+  for (const k of IDENTITY_PLATFORMS) jar.set(identCookie(k), '', cookieOpts(0));
+}
+
+/** Keep an identity proved outside a sign-in (a phone number, by its code), like the others: 30 minutes, signed. */
+export async function rememberIdentity(platform, identities) {
+  const jar = await cookies();
+  jar.set(identCookie(platform), fit(identities), cookieOpts(IDENT_TTL));
 }
 
 /** The proved identity that owns (platform, handle), or null. */

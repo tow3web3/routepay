@@ -3,6 +3,7 @@
 // file is the registry of platforms and the parser that turns whatever a
 // creator pastes (a URL, an @handle, a domain) into that pair. No I/O here, so
 // the browser and the server share it.
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 
 export const PLATFORMS = {
   youtube: { label: 'YouTube', noun: 'channel', color: '#FF0033', placeholder: 'youtube.com/@channel', proof: 'oauth', hosts: ['youtube.com', 'youtu.be'] },
@@ -13,6 +14,9 @@ export const PLATFORMS = {
   tiktok: { label: 'TikTok', noun: 'account', color: '#25F4EE', placeholder: 'tiktok.com/@handle', proof: 'oauth', hosts: ['tiktok.com'] },
   twitch: { label: 'Twitch', noun: 'channel', color: '#9146FF', placeholder: 'twitch.tv/channel', proof: 'oauth', hosts: ['twitch.tv'] },
   domain: { label: 'Domain', noun: 'website', color: '#C8FD3B', placeholder: 'example.com', proof: 'dns', hosts: [] },
+  // A phone number, proved by a code sent over WhatsApp or SMS. Its handle is the
+  // number in international form; it is shown masked and never appears in a URL.
+  phone: { label: 'Phone', noun: 'number', color: '#25D366', placeholder: '+33 6 12 34 56 78', proof: 'otp', hosts: ['wa.me', 'api.whatsapp.com'] },
 };
 export const PLATFORM_KEYS = Object.keys(PLATFORMS);
 
@@ -25,6 +29,7 @@ const HANDLE_RULES = {
   tiktok: /^[a-z0-9._]{2,24}$/,
   twitch: /^[a-z0-9_]{3,25}$/,
   domain: /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/,
+  phone: /^\+[1-9]\d{6,14}$/,
 };
 // First path segments that are part of the platform, not somebody's page.
 const RESERVED = {
@@ -46,6 +51,7 @@ export function normalizeHandle(platform, raw) {
   if (!PLATFORMS[platform]) return null;
   const exact = String(raw || '').trim();
   if (platform === 'youtube' && /^UC[A-Za-z0-9_-]{22}$/.test(exact)) return exact;
+  if (platform === 'phone') return normalizePhone(exact);
   let h = exact.toLowerCase();
   if (!h) return null;
   if (platform === 'domain') {
@@ -60,6 +66,26 @@ export function normalizeHandle(platform, raw) {
   return h;
 }
 
+/** A number in international form (+33612345678), or null. Accepts spaces, dots, dashes, 00 for +, tel: and wa.me links. */
+export function normalizePhone(raw) {
+  let s = String(raw || '').trim().replace(/^tel:/i, '').replace(/^(https?:\/\/)?(www\.)?(wa\.me|api\.whatsapp\.com\/send\?phone=)\/?/i, '+');
+  s = s.replace(/[\s().-]/g, '').replace(/^00/, '+');
+  if (!s.startsWith('+')) return null; // without a country code there is no way to know whose number it is
+  const n = parsePhoneNumberFromString(s);
+  return n && n.isValid() && HANDLE_RULES.phone.test(n.number) ? n.number : null;
+}
+
+/** A number as it may be shown to anyone: country code and last two digits, the rest hidden. */
+export function maskPhone(e164) {
+  const n = parsePhoneNumberFromString(String(e164 || ''));
+  if (!n) return '+•• •• •• ••';
+  const national = n.formatNational().replace(/^0/, '').replace(/[()]/g, '').trim();
+  const digits = national.replace(/\D/g, '');
+  let seen = 0;
+  const masked = national.replace(/\d/g, (d) => (++seen > digits.length - 2 ? d : '•'));
+  return `+${n.countryCallingCode} ${masked}`;
+}
+
 /**
  * Turn what a creator typed into { platform, handle }. Accepts a full URL, a
  * bare domain, or "platform:handle". With `hint`, a bare handle is read as a
@@ -72,6 +98,13 @@ export function parsePage(input, hint = null) {
 
   const tagged = raw.match(/^([a-z]+):(?!\/\/)(.+)$/i);
   if (tagged && PLATFORMS[tagged[1].toLowerCase()]) return finish(tagged[1].toLowerCase(), tagged[2]);
+
+  // A number: starts with + or 00, or a wa.me link.
+  if (/^(\+|00)[\d\s().-]{6,}$/.test(raw) || /^tel:/i.test(raw) || /^(https?:\/\/)?(www\.)?(wa\.me|api\.whatsapp\.com)/i.test(raw)) {
+    const h = normalizePhone(raw);
+    return h ? { platform: 'phone', handle: h } : { error: 'That is not a valid phone number. Write it with the country code: +33 6 12 34 56 78' };
+  }
+  if (/^0\d[\d\s().-]{7,}$/.test(raw)) return { error: 'Add the country code: +33 6 12 34 56 78' };
 
   const looksLikeUrl = /^[a-z]+:\/\//i.test(raw) || /^[^\s/@]+\.[a-z]{2,24}(\/|$)/i.test(raw);
   if (looksLikeUrl) {
@@ -116,6 +149,7 @@ export function pageUrl(platform, handle) {
     case 'tiktok': return `https://www.tiktok.com/@${h}`;
     case 'twitch': return `https://www.twitch.tv/${h}`;
     case 'domain': return `https://${h}`;
+    case 'phone': return null; // a number has no public page anywhere
     default: return null;
   }
 }
@@ -123,14 +157,18 @@ export function pageUrl(platform, handle) {
 /** How a page is written in text: "@yourchannel", "your-project", "example.com". */
 export function pageName(platform, handle) {
   const h = String(handle || '');
+  if (platform === 'phone') return h.includes('•') ? h : h.startsWith('+') ? maskPhone(h) : 'A phone number';
   if (platform === 'domain' || platform === 'github' || platform === 'twitch' || platform === 'facebook') return h;
   if (platform === 'youtube' && !h.startsWith('@')) return `channel ${h.slice(0, 8)}…`;
   return h.startsWith('@') ? h : `@${h}`;
 }
 
 /** The picture of a page, served by the site: its avatar or favicon, else the logo of its platform. Never empty. */
-export const pageAvatar = (platform, handle) => `/api/pages/avatar/${platform}/${encodeURIComponent(handle)}`;
+export const pageAvatar = (platform, handle) => (platform === 'phone' ? '/api/pages/avatar/phone/-' : `/api/pages/avatar/${platform}/${encodeURIComponent(handle)}`);
 
-/** The ROUTEPAY path of a page: /p/github/your-project. */
-export const pagePath = (platform, handle) => `/p/${platform}/${encodeURIComponent(handle)}`;
+/**
+ * The ROUTEPAY path of a page: /p/github/your-project. A phone page is
+ * addressed by its slug (a keyed hash the server gives), never by the number.
+ */
+export const pagePath = (platform, handle, slug = null) => (platform === 'phone' ? `/p/phone/${encodeURIComponent(slug || 'unknown')}` : `/p/${platform}/${encodeURIComponent(handle)}`);
 export const pageKey = (platform, handle) => `${platform}:${handle}`;

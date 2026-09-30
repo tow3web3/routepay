@@ -205,7 +205,7 @@ export async function getRecentExecutions(tokenAddress, limit = 10) {
 // ---------- fee routing legs ----------
 export async function getPolicyLegs(configId) {
   const r = await pool.query(
-    `SELECT l.*, p.platform AS page_platform, p.handle AS page_handle, p.vault_address AS page_vault, p.claimed_wallet AS page_wallet
+    `SELECT l.*, p.platform AS page_platform, p.handle AS page_handle, p.slug AS page_slug, p.vault_address AS page_vault, p.claimed_wallet AS page_wallet
      FROM policy_legs l LEFT JOIN social_pages p ON p.id = l.page_id
      WHERE l.config_id = $1 ORDER BY l.sort_order, l.id`,
     [configId]

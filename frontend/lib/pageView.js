@@ -23,8 +23,9 @@ export function pageCard(p, ethUsd = 0) {
     handle: p.handle,
     name: p.display_name || pageName(p.platform, p.handle),
     avatar: p.avatar_url || null,
+    slug: p.slug || null,
     url: pageUrl(p.platform, p.handle),
-    path: pagePath(p.platform, p.handle),
+    path: pagePath(p.platform, p.handle, p.slug),
     claimed: Boolean(p.claimed ?? p.claimed_wallet),
     vault: p.vault_address,
     receivedUsd: p.value_wei != null ? usd(p.value_wei, ethUsd) : null,
@@ -48,7 +49,7 @@ export async function pageView(page) {
   const coin = (a) => (a ? { address: a, symbol: meta[a]?.symbol || null, name: meta[a]?.name || null, image: meta[a]?.image || null } : null);
   return {
     ...pageCard({ ...page, value_wei: totals.value_wei, payments: totals.payments, coins: sources.filter((s) => s.is_active).length, last_at: totals.last_at }, ethUsd),
-    link: `${SITE_URL}${pagePath(page.platform, page.handle)}`,
+    link: `${SITE_URL}${pagePath(page.platform, page.handle, page.slug)}`,
     claimedAt: page.claimed_at || null,
     claimedWallet: page.claimed_wallet || null,
     sweepPending: Boolean(page.sweep_pending),

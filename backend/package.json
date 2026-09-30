@@ -11,15 +11,23 @@
     "test-run": "node scripts/test-run.mjs",
     "probe": "node scripts/probe-stock.mjs"
   },
-  "keywords": ["robinhood-chain", "stock-tokens", "telegram", "bot", "airdrop", "dividends"],
+  "keywords": [
+    "robinhood-chain",
+    "stock-tokens",
+    "telegram",
+    "bot",
+    "airdrop",
+    "dividends"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "viem": "^2.21.0",
-    "telegraf": "^4.16.0",
+    "dotenv": "^16.4.0",
     "express": "^4.18.0",
-    "pg": "^8.11.0",
+    "libphonenumber-js": "^1.13.14",
     "node-cron": "^3.0.3",
-    "dotenv": "^16.4.0"
+    "pg": "^8.11.0",
+    "telegraf": "^4.16.0",
+    "viem": "^2.21.0"
   }
 }

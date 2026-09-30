@@ -47,7 +47,7 @@ function legsFromData(data) {
   if (legs?.length) {
     return legs.map((l, i) => ({
       key: `l${l.id}`, kind: l.kind, shareBps: Number(l.share_bps), address: l.address || '', asset: l.asset || '', label: l.label || KIND[l.kind].label, posX: l.pos_x ?? LEG_X, posY: l.pos_y ?? 30 + i * LEG_GAP,
-      ...(l.kind === 'page' ? { page: l.page_handle ? { platform: l.page_platform, handle: l.page_handle, claimed: Boolean(l.page_claimed), vault: l.page_vault || null, avatar: l.page_avatar || null } : null, pageInput: '' } : {}),
+      ...(l.kind === 'page' ? { page: l.page_handle ? { platform: l.page_platform, handle: l.page_handle, slug: l.page_slug || null, claimed: Boolean(l.page_claimed), vault: l.page_vault || null, avatar: l.page_avatar || null } : null, pageInput: '' } : {}),
     }));
   }
   // Legacy split → legs
@@ -416,7 +416,7 @@ function PageSection({ leg, patch, taken }) {
   }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
   const p = leg.page;
   return (
-    <Section title="The page" aside={p && <Link href={pagePath(p.platform, p.handle)} target="_blank" className={textLink}>Public profile<External className="h-2.5 w-2.5" /></Link>}>
+    <Section title="The page" aside={p && <Link href={pagePath(p.platform, p.handle, p.slug)} target="_blank" className={textLink}>Public profile<External className="h-2.5 w-2.5" /></Link>}>
       {p && (
         <div className="mb-2.5 flex items-center gap-3 rounded-xl border border-line bg-ground p-2.5">
           <PageAvatar page={p} size="h-9 w-9" badge="h-4 w-4" />

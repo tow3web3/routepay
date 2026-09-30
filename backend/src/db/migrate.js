@@ -436,6 +436,8 @@ async function migrate() {
       );
     `);
     await pool.query(`ALTER TABLE policy_legs ADD COLUMN IF NOT EXISTS page_id INTEGER REFERENCES social_pages(id) ON DELETE SET NULL;`);
+    // A phone page is addressed by a slug (keyed hash of the number), never by the number itself.
+    await pool.query(`ALTER TABLE social_pages ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_policy_legs_page ON policy_legs(page_id);`);
     // Every payment a page received: into its vault, or direct to the bound wallet.
     await pool.query(`

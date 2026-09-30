@@ -134,7 +134,8 @@ export async function GET(request, { params }) {
         kind: l.kind, shareBps: Number(l.share_bps), label: l.label || null, asset: l.asset || null, assetSymbol: assetSymbol(l.asset),
         // A page leg pays the page's vault, or its owner once claimed: the address shown is the vault, the page says which.
         address: l.kind === 'page' ? l.page_vault || null : l.address || null,
-        page: l.kind === 'page' && l.page_handle ? { platform: l.page_platform, handle: l.page_handle, claimed: Boolean(l.page_claimed) } : null,
+        // A phone number is never given out in full: the public sees it masked, and reaches the page by its slug.
+        page: l.kind === 'page' && l.page_handle ? { platform: l.page_platform, handle: l.page_platform === 'phone' ? pageName('phone', l.page_handle) : l.page_handle, slug: l.page_slug || null, path: pagePath(l.page_platform, l.page_handle, l.page_slug), claimed: Boolean(l.page_claimed) } : null,
       })),
       devWallet: { address: config.dev_wallet_public, totalUsd: wallet?.totalUsd ?? null, eth: wallet?.assets?.find((a) => a.isNative)?.amount ?? null },
       treasury,

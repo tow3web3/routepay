@@ -54,7 +54,7 @@ export const GUIDE = [
     title: 'Route fees to a page',
     id: 'pages',
     body: [
-      'On the canvas, add a destination of kind {b:Page} and paste the link of the page: {c:youtube.com/@channel}, {c:github.com/name}, {c:x.com/handle}, a domain. The page appears with its picture; give it a share and save.',
+      'On the canvas, add a destination of kind {b:Page} and paste the link of the page: {c:youtube.com/@channel}, {c:github.com/name}, {c:x.com/handle}, a domain, or a phone number with its country code. The page appears with its picture; give it a share and save.',
       { platforms: true },
       { steps: [
         { title: 'A vault is created', body: 'Each page gets a wallet of its own the moment a coin routes to it. Its address and balance are on the public profile of the page, at {c:/p/<platform>/<name>}, and on chain.' },
@@ -74,6 +74,7 @@ export const GUIDE = [
       { steps: [
         { title: 'Connect the page', body: `Click your platform. {p:youtube|YouTube}, {p:github|GitHub}, {p:x|X}, {p:instagram|Instagram}, {p:facebook|Facebook}, {p:tiktok|TikTok} and {p:twitch|Twitch} open a sign-in on the platform itself, read only: ${BRAND} sees which pages your account runs and nothing else, and keeps no access afterwards. Your connected pages then appear with what waits in their vault.`, p: 'youtube' },
         { title: 'For a website, add a DNS record', body: 'Type the domain and connect your wallet. The page gives you a TXT record to add on {c:_routepay.<yourdomain>}. Once it spreads, usually within minutes, the domain is yours to claim.', p: 'domain' },
+        { title: 'For a phone number, a code', body: 'Type the number with its country code and choose {p:phone|WhatsApp} or SMS. A six-digit code arrives; type it, and the number is proved. The site shows the number in part only, and its address is a code of its own, so nobody reads a number off a profile.', p: 'phone' },
         { title: 'Connect the wallet that gets paid', body: 'MetaMask, Rabby or any wallet on Robinhood Chain. Sign the message: it says which page pays which wallet, and nothing else.' },
         { title: 'Receive', body: 'What waited in the vault arrives within minutes. Every later cycle pays your wallet directly. To change the wallet later, sign again from the new one.' },
       ] },

@@ -13,6 +13,7 @@
 // Configs made before routing existed derive their legs from the legacy split
 // columns, so the executor only ever deals with legs.
 import { isNative, isAddress, short, formatEth, formatUnits, explorerTx, NATIVE_ETH } from '../chain/config.js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import { swapEthForToken, swapTokenForEth } from './swap.js';
 import { burnTokens } from './airdrop.js';
 import { describeReward } from './rewards.js';
@@ -47,16 +48,26 @@ function normalizeLeg(r) {
     ...leg,
     address: claimed ? r.page_wallet : r.page_vault || null,
     label: r.label || (r.page_handle ? pageLabel(r.page_platform, r.page_handle) : 'Page'),
-    page: r.page_id && r.page_handle ? { id: r.page_id, platform: r.page_platform, handle: r.page_handle, claimed } : null,
+    page: r.page_id && r.page_handle ? { id: r.page_id, platform: r.page_platform, handle: r.page_handle, slug: r.page_slug || null, claimed } : null,
   };
 }
 const defaultLabel = (kind) => ({ holders: 'Holders', wallet: 'Wallet', burn: 'Buyback & burn', treasury: 'Treasury', page: 'Page' }[kind] || kind);
-const PLATFORM_LABEL = { youtube: 'YouTube', github: 'GitHub', x: 'X', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', twitch: 'Twitch', domain: '' };
+const PLATFORM_LABEL = { youtube: 'YouTube', github: 'GitHub', x: 'X', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', twitch: 'Twitch', domain: '', phone: 'Phone' };
+/** A number as anyone may read it: country code and last two digits. The rest is hidden. */
+export function maskPhone(e164) {
+  const n = parsePhoneNumberFromString(String(e164 || ''));
+  if (!n) return '+•• •• •• ••';
+  const national = n.formatNational().replace(/^0/, '').replace(/[()]/g, '').trim();
+  const digits = national.replace(/\D/g, '');
+  let seen = 0;
+  return `+${n.countryCallingCode} ${national.replace(/\d/g, (d) => (++seen > digits.length - 2 ? d : '•'))}`;
+}
 /** Telegram (legacy Markdown) reads _ * ` [ as formatting: handles are full of underscores. */
 export const mdEscape = (s) => String(s ?? '').replace(/([_*`\[])/g, '\\$1');
 /** "GitHub your-project", "YouTube @yourchannel", "example.com". */
-export const pageLabel = (platform, handle) => [PLATFORM_LABEL[platform] ?? platform, handle].filter(Boolean).join(' ');
-export const pagePath = (page) => `/p/${page.platform}/${encodeURIComponent(page.handle)}`;
+export const pageLabel = (platform, handle) => [PLATFORM_LABEL[platform] ?? platform, platform === 'phone' ? maskPhone(handle) : handle].filter(Boolean).join(' ');
+// A phone page is addressed by its slug, never by the number.
+export const pagePath = (page) => (page.platform === 'phone' ? `/p/phone/${encodeURIComponent(page.slug || 'unknown')}` : `/p/${page.platform}/${encodeURIComponent(page.handle)}`);
 
 /** Human summary of a routing table: "70% holders · 20% 0x8a2f (GLD) · 10% treasury". */
 export async function legsLabel(legs) {

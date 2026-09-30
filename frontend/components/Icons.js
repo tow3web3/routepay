@@ -69,7 +69,7 @@ export const Copy = bold(PhCopy);
 
 // Platforms: the official glyph of each one (lib/platformPaths.js), in its own
 // colours as they read on a dark page. `mono` draws the bare glyph in the text colour.
-const ON_DARK = { youtube: '#FF0000', github: '#FFFFFF', x: '#FFFFFF', facebook: '#0866FF', tiktok: '#FFFFFF', twitch: '#9146FF', domain: '#C8FD3B' };
+const ON_DARK = { youtube: '#FF0000', github: '#FFFFFF', x: '#FFFFFF', facebook: '#0866FF', tiktok: '#FFFFFF', twitch: '#9146FF', domain: '#C8FD3B', phone: '#25D366' };
 // What shows through the holes of a glyph: the play triangle of YouTube and the f of Facebook are white.
 const UNDERLAY = {
   youtube: <path fill="#FFFFFF" d="M9.545 15.568V8.432L15.818 12z" />,

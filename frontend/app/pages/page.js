@@ -85,7 +85,7 @@ export default async function PagesDirectory({ searchParams }) {
               <span className="label">{q ? `Results for "${q}"` : platform ? `${PLATFORMS[platform].label}, by amount received` : 'By amount received'}</span>
               <span className="text-[11px] text-mut">{data.pages.length} shown</span>
             </div>
-            {exact && !exact.error && !data.pages.some((p) => p.platform === exact.platform && p.handle === exact.handle) && (
+            {exact && !exact.error && exact.platform !== 'phone' && !data.pages.some((p) => p.platform === exact.platform && p.handle === exact.handle) && (
               <Link href={pagePath(exact.platform, exact.handle)} className="flex items-center justify-between gap-3 border-b border-line bg-tile/50 px-4 py-3 text-sm text-ink transition hover:bg-tile">
                 <span className="flex items-center gap-2"><PlatformIcon platform={exact.platform} className="h-4 w-4" />Open the profile of <span className="font-semibold">{exact.handle}</span> on {PLATFORMS[exact.platform].label}</span>
                 <Arrow className="h-4 w-4 text-mut" />

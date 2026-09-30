@@ -3,10 +3,22 @@
 // reader goes through PUBLIC, which does not select it.
 import { getSql } from './db';
 import { encryptPrivateKey, generateDevWallet } from './crypto';
-import { PLATFORMS, normalizeHandle } from './pages';
+import crypto from 'crypto';
+import { PLATFORMS, normalizeHandle, maskPhone } from './pages';
 
 const lc = (a) => (a ? String(a).toLowerCase() : null);
-const PUBLIC = 'id, platform, handle, external_id, display_name, avatar_url, vault_address, claimed_wallet, claimed_at, sweep_pending, last_swept_at, created_at';
+const PUBLIC = 'id, platform, handle, slug, external_id, display_name, avatar_url, vault_address, claimed_wallet, claimed_at, sweep_pending, last_swept_at, created_at';
+
+/** The public address of a phone page: a keyed hash of the number. Nobody can walk back from it to the number. */
+export function phoneSlug(e164) {
+  const key = process.env.SESSION_SECRET;
+  if (!key) throw new Error('SESSION_SECRET is not set');
+  return crypto.createHmac('sha256', key).update(`phone.${e164}`).digest('base64url').replace(/[-_]/g, '').slice(0, 12).toLowerCase();
+}
+
+// A phone number never leaves this file in full unless the caller says so: every
+// reader gets it masked. Only the claim, which speaks to the owner, asks for it raw.
+const scrub = (row) => (row && row.platform === 'phone' && row.handle && !row.handle.includes('•') ? { ...row, handle: maskPhone(row.handle), number: undefined } : row);
 
 async function query(text, values = []) {
   const { getPool } = await import('./dbPool');
@@ -14,16 +26,22 @@ async function query(text, values = []) {
   return rows;
 }
 
-export async function getPage(platform, handle) {
+export async function getPage(platform, handle, { raw = false } = {}) {
   const h = normalizeHandle(platform, handle);
+  const out = (row) => (raw ? row : scrub(row));
+  // A phone page answers to its number (from a claim) and to its slug (from its address).
+  if (!h && platform === 'phone' && /^[a-z0-9]{12}$/.test(String(handle || ''))) {
+    const rows = await query(`SELECT ${PUBLIC} FROM social_pages WHERE platform = 'phone' AND slug = $1`, [String(handle)]);
+    return out(rows[0] || null);
+  }
   if (!h) return null;
   const rows = await query(`SELECT ${PUBLIC} FROM social_pages WHERE platform = $1 AND handle = $2`, [platform, h]);
-  return rows[0] || null;
+  return out(rows[0] || null);
 }
 
-export async function getPageById(id) {
+export async function getPageById(id, { raw = false } = {}) {
   const rows = await query(`SELECT ${PUBLIC} FROM social_pages WHERE id = $1`, [id]);
-  return rows[0] || null;
+  return raw ? rows[0] || null : scrub(rows[0] || null);
 }
 
 /**
@@ -35,15 +53,15 @@ export async function ensurePage(platform, handle, userId = null) {
   if (!PLATFORMS[platform]) throw new Error(`Unknown platform "${platform}"`);
   const h = normalizeHandle(platform, handle);
   if (!h) throw new Error(`That is not a valid ${PLATFORMS[platform].label} page`);
-  const existing = await getPage(platform, h);
+  const existing = await getPage(platform, h, { raw: true });
   if (existing) return existing;
   const vault = generateDevWallet();
   const rows = await query(
-    `INSERT INTO social_pages (platform, handle, vault_address, vault_encrypted, created_by)
-     VALUES ($1, $2, $3, $4, $5) ON CONFLICT (platform, handle) DO NOTHING RETURNING ${PUBLIC}`,
-    [platform, h, lc(vault.address), JSON.stringify(encryptPrivateKey(vault.privateKey)), userId]
+    `INSERT INTO social_pages (platform, handle, slug, vault_address, vault_encrypted, created_by)
+     VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (platform, handle) DO NOTHING RETURNING ${PUBLIC}`,
+    [platform, h, platform === 'phone' ? phoneSlug(h) : null, lc(vault.address), JSON.stringify(encryptPrivateKey(vault.privateKey)), userId]
   );
-  return rows[0] || (await getPage(platform, h));
+  return rows[0] || (await getPage(platform, h, { raw: true }));
 }
 
 /** Totals per asset, split between what is waiting in the vault's ledger and what went straight to the owner. */
@@ -89,8 +107,8 @@ export async function pageSources(pageId) {
 /** The directory: pages ranked by what they received. Pages nobody routes to and nobody paid stay out. */
 export async function topPages({ limit = 24, platform = null, q = null } = {}) {
   const like = q ? `%${String(q).toLowerCase().replace(/[%_\\]/g, '')}%` : null;
-  return await query(
-    `SELECT p.id, p.platform, p.handle, p.display_name, p.avatar_url, p.vault_address, p.claimed_wallet IS NOT NULL AS claimed, p.created_at,
+  return (await query(
+    `SELECT p.id, p.platform, p.handle, p.slug, p.display_name, p.avatar_url, p.vault_address, p.claimed_wallet IS NOT NULL AS claimed, p.created_at,
             COALESCE(t.value_wei, 0)::text AS value_wei, COALESCE(t.payments, 0)::int AS payments, t.last_at,
             COALESCE(s.coins, 0)::int AS coins
      FROM social_pages p
@@ -98,20 +116,20 @@ export async function topPages({ limit = 24, platform = null, q = null } = {}) {
      LEFT JOIN (SELECT l.page_id, COUNT(DISTINCT l.config_id) AS coins FROM policy_legs l JOIN bot_configs bc ON bc.id = l.config_id AND bc.legs_enabled = true WHERE l.kind = 'page' GROUP BY l.page_id) s ON s.page_id = p.id
      WHERE (COALESCE(t.payments, 0) > 0 OR COALESCE(s.coins, 0) > 0)
        AND ($1::text IS NULL OR p.platform = $1)
-       AND ($2::text IS NULL OR p.handle LIKE $2 OR LOWER(COALESCE(p.display_name, '')) LIKE $2)
+       AND ($2::text IS NULL OR (p.platform <> 'phone' AND p.handle LIKE $2) OR LOWER(COALESCE(p.display_name, '')) LIKE $2)
      ORDER BY COALESCE(t.value_wei, 0) DESC, COALESCE(s.coins, 0) DESC, p.id DESC
      LIMIT $3`,
     [platform && PLATFORMS[platform] ? platform : null, like, Math.min(100, Math.max(1, Number(limit) || 24))]
-  );
+  )).map(scrub);
 }
 
 export async function recentPagePayouts(limit = 20) {
   const sql = getSql();
-  return await sql`
+  return (await sql`
     SELECT pp.id, pp.source_token, pp.token, pp.symbol, pp.decimals, pp.amount::text AS amount, pp.value_wei::text AS value_wei, pp.direct, pp.tx_hash, pp.created_at,
-           p.platform, p.handle, p.display_name, p.avatar_url
+           p.platform, p.handle, p.slug, p.display_name, p.avatar_url
     FROM page_payouts pp JOIN social_pages p ON p.id = pp.page_id
-    ORDER BY pp.created_at DESC LIMIT ${limit}`;
+    ORDER BY pp.created_at DESC LIMIT ${limit}`).map(scrub);
 }
 
 export async function pagesStats() {

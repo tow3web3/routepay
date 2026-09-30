@@ -24,12 +24,12 @@ export async function GET() {
       for (const identity of list) {
         // An account can answer to several handles (a YouTube channel has an @handle and an id),
         // and creators may have routed to either: show every page that exists, else the first handle.
-        const pages = (await Promise.all(identity.handles.map((h) => getPage(platform, h)))).filter(Boolean);
+        const pages = (await Promise.all(identity.handles.map((h) => getPage(platform, h, { raw: true })))).filter(Boolean);
         for (const page of pages.length ? pages : [null]) {
           const handle = page?.handle || identity.handles[0];
           const view = page ? await pageView(page) : null;
           proved.push({
-            platform, handle, name: identity.name || pageName(platform, handle), avatar: identity.avatar, path: pagePath(platform, handle),
+            platform, handle, name: identity.name || pageName(platform, handle), avatar: identity.avatar, path: page ? pagePath(platform, handle, page.slug) : null,
             exists: Boolean(page), claimed: Boolean(page?.claimed_wallet), claimedWallet: page?.claimed_wallet || null,
             receivedUsd: view?.receivedUsd ?? 0, paidToOwnerUsd: view?.paidToOwnerUsd ?? 0, payments: view?.payments ?? 0, lastAt: view?.lastAt || null,
             vaultUsd: view?.vaultBalance?.totalUsd ?? 0, vaultAssets: view?.vaultBalance?.assets || [], coins: view?.coins ?? 0,
@@ -60,7 +60,7 @@ export async function POST(request) {
       if (!(await domainProved(handle, wallet))) return Response.json({ error: `The TXT record was not found on _routepay.${handle}. DNS changes can take a few minutes to spread.` }, { status: 403 });
     } else {
       identity = await identityFor(platform, handle);
-      if (!identity) return Response.json({ error: `Sign in with ${PLATFORMS[platform].label} as the owner of ${pageName(platform, handle)} first` }, { status: 403 });
+      if (!identity) return Response.json({ error: platform === 'phone' ? 'Prove the number with the code first' : `Sign in with ${PLATFORMS[platform].label} as the owner of ${pageName(platform, handle)} first` }, { status: 403 });
     }
 
     // 2. The wallet is theirs, and it agreed to be the destination of this page.
@@ -71,13 +71,13 @@ export async function POST(request) {
     // 3. Bind. A page nobody routes to yet can be claimed ahead: it is created here.
     const page = await ensurePage(platform, handle);
     await claimPage({
-      pageId: page.id, wallet, proof: platform === 'domain' ? 'dns' : 'oauth',
+      pageId: page.id, wallet, proof: platform === 'domain' ? 'dns' : platform === 'phone' ? 'otp' : 'oauth',
       externalId: identity?.id || null, externalHandle: handle, displayName: identity?.name || null, avatarUrl: identity?.avatar || null,
     });
 
     // 4. Empty the vault now. If the backend is unreachable its next tick does it.
     const sweep = await internal(`/pages/sweep/${page.id}`);
-    return Response.json({ ok: true, page: pagePath(platform, handle), wallet: String(wallet).toLowerCase(), sweepStarted: Boolean(sweep.ok) });
+    return Response.json({ ok: true, page: pagePath(platform, handle, page.slug), wallet: String(wallet).toLowerCase(), sweepStarted: Boolean(sweep.ok) });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 400 });
   }

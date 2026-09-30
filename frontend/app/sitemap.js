@@ -15,7 +15,7 @@ export default async function sitemap() {
   const [pages, coins] = await Promise.all([topPages({ limit: 100 }).catch(() => []), getActiveTokens().catch(() => [])]);
   return [
     ...fixed,
-    ...pages.map((p) => ({ url: `${SITE_URL}${pagePath(p.platform, p.handle)}`, lastModified: p.last_at || p.created_at || now, changeFrequency: 'daily', priority: 0.7 })),
+    ...pages.map((p) => ({ url: `${SITE_URL}${pagePath(p.platform, p.handle, p.slug)}`, lastModified: p.last_at || p.created_at || now, changeFrequency: 'daily', priority: 0.7 })),
     ...[...new Set(coins.map((c) => c.address))].map((a) => ({ url: `${SITE_URL}/${a}`, lastModified: now, changeFrequency: 'hourly', priority: 0.7 })),
   ];
 }

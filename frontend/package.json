@@ -11,6 +11,7 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@xyflow/react": "^12.11.6",
+    "libphonenumber-js": "^1.13.14",
     "motion": "^13.4.4",
     "next": "^16.1.6",
     "pg": "^8.11.0",

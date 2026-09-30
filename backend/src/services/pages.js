@@ -77,7 +77,7 @@ export async function sweepPage(pageId) {
     const tokens = holdings.filter((h) => !h.isNative);
     const moved = [];
     const left = [];
-    console.log(`Sweeping ${page.platform}:${page.handle} vault ${short(account.address)} to ${short(to)}: ${holdings.length ? holdings.map((h) => `${formatUnits(h.amount, h.decimals, 4)} ${h.symbol}`).join(', ') : 'empty'}`);
+    console.log(`Sweeping ${page.platform}:${page.platform === 'phone' ? page.slug || '(number)' : page.handle} vault ${short(account.address)} to ${short(to)}: ${holdings.length ? holdings.map((h) => `${formatUnits(h.amount, h.decimals, 4)} ${h.symbol}`).join(', ') : 'empty'}`);
 
     // Gas for the token transfers, borrowed from the gas wallet when the vault is short.
     if (tokens.length) {

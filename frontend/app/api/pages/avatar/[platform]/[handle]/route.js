@@ -54,6 +54,8 @@ async function platformLogo(platform) {
 export async function GET(request, { params }) {
   const { platform, handle: raw } = await params;
   if (!PLATFORMS[platform]) return new Response('Unknown platform', { status: 400 });
+  // A number has no picture anywhere, and must not be looked up by anyone: the logo, always.
+  if (platform === 'phone') { const logo = await platformLogo('phone'); return new Response(logo.body, { headers: { 'Content-Type': logo.type, 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff' } }); }
   const handle = normalizeHandle(platform, decodeURIComponent(raw));
   if (!handle) return new Response('Invalid handle', { status: 400 });
 

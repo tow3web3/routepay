@@ -32,6 +32,7 @@ export const PRIVACY = [
         ['Facebook', 'The Pages the account manages: id, username, name and picture.'],
         ['TikTok', 'The account: id, username, name and picture.'],
         ['A domain', 'No sign-in. We look up a public DNS record that you add to the domain.'],
+        ['A phone number', 'No sign-in. A six-digit code is sent to the number over WhatsApp or SMS by Twilio, our messaging provider, which sees the number for that purpose. The number is stored in international form, shown to others in part only (+33 • •• •• •• 78), and never placed in an address.'],
       ] },
       'We do not read your videos, posts, messages, followers, e-mail address, contacts, or anything private. The list above is all of it.',
       'What we read is kept in a signed cookie in your browser for 30 minutes, so the page can show what waits for you. The public picture of the page is copied to our server, so its profile here shows its own face. The rest is stored on our side only if you claim, as described below.',

@@ -3,22 +3,22 @@
 // the screener may list for them holds a few dollars and quotes nonsense. This
 // finds a coin's curve, quotes it, and buys on it.
 //
-// The factory emits one event per launch, with the token and its curve as
-// indexed topics. The curve itself answers token(), graduated(), feeBps() and
+// The factory keeps a launch record per token, which names its curve
+// (getLaunchedToken). The curve itself answers token(), graduated(), feeBps() and
 // buy(amountIn, minOut, recipient) payable, which returns the tokens bought.
 import { parseAbi } from 'viem';
 import { publicClient, walletFor, confirm, erc20Abi, explorerTx } from '../chain/config.js';
 
 export const PONS_FACTORY = (process.env.PONS_FACTORY || '0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e').toLowerCase();
-const LAUNCH_TOPIC = '0x8d4aad4953d0ca700d468f3753aa14432d1b35b43ec6409f051fb6aa43a89607';
 const CURVE_ABI = parseAbi([
   'function token() view returns (address)',
   'function graduated() view returns (bool)',
   'function feeBps() view returns (uint256)',
   'function buy(uint256 amountIn, uint256 minOut, address recipient) payable returns (uint256 amountOut)',
 ]);
-const CHUNK = 100_000n;
-const MAX_CHUNKS = 60; // six million blocks back: every launch so far
+// The factory keeps every launch: getLaunchedToken(token) returns the launch record,
+// whose first two fields are the token and its curve (zero for a token it did not launch).
+const FACTORY_ABI = parseAbi(['function getLaunchedToken(address token) view returns (address launchedToken, address curve)']);
 const PROBE = 10n ** 14n; // 0.0001 ETH: small enough to read the spot price
 
 const cache = new Map(); // token -> { curve|null, ts }
@@ -32,17 +32,8 @@ export async function curveFor(token) {
   let curve = null;
   try {
     const client = publicClient();
-    const head = await client.getBlockNumber();
-    const topic = `0x${key.slice(2).padStart(64, '0')}`;
-    for (let i = 0; i < MAX_CHUNKS && !curve; i++) {
-      const to = head - CHUNK * BigInt(i);
-      if (to <= 0n) break;
-      const from = to - CHUNK + 1n > 0n ? to - CHUNK + 1n : 0n;
-      // The public RPC ignores the second topic of a filter: match the token here.
-      const logs = await client.getLogs({ address: PONS_FACTORY, fromBlock: from, toBlock: to, topics: [LAUNCH_TOPIC, topic] });
-      const mine = logs.find((l) => (l.topics[1] || '').toLowerCase() === topic);
-      if (mine) curve = `0x${mine.topics[2].slice(26)}`;
-    }
+    const [launched, found] = await client.readContract({ address: PONS_FACTORY, abi: FACTORY_ABI, functionName: 'getLaunchedToken', args: [token] });
+    if (launched.toLowerCase() === key && !/^0x0{40}$/i.test(found)) curve = found;
     if (curve) {
       const [t, graduated] = await Promise.all([
         client.readContract({ address: curve, abi: CURVE_ABI, functionName: 'token' }),

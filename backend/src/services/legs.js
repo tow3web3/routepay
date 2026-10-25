@@ -106,11 +106,17 @@ export async function convertAsset({ config, privateKey, asset, amount, toToken 
     sellTx = sold.hash;
   }
   if (isNative(toToken)) return { address: NATIVE_ETH, symbol: 'ETH', decimals: 18, amount: wei, isNative: true, swapTx: sellTx };
-  const target = await describeReward(toToken);
-  const oracle = target.isStock ? await stockOracle(target.ticker) : await tokenOracle(target.address);
-  console.log(`   Converting ${asset.isNative ? formatEth(wei, 4) + ' ETH' : formatUnits(amount, asset.decimals, 4) + ' ' + asset.symbol} into ${target.symbol}`);
-  const swap = await swapEthForToken({ privateKey, token: target.address, decimals: target.decimals, amountWei: wei, slippageBps: config.slippage_bps || 150, oracle });
-  return { address: target.address, symbol: target.symbol, decimals: target.decimals, amount: swap.outputAmount, isNative: false, swapTx: swap.hash };
+  try {
+    const target = await describeReward(toToken);
+    const oracle = target.isStock ? await stockOracle(target.ticker) : await tokenOracle(target.address);
+    console.log(`   Converting ${asset.isNative ? formatEth(wei, 4) + ' ETH' : formatUnits(amount, asset.decimals, 4) + ' ' + asset.symbol} into ${target.symbol}`);
+    const swap = await swapEthForToken({ privateKey, token: target.address, decimals: target.decimals, amountWei: wei, slippageBps: config.slippage_bps || 150, oracle });
+    return { address: target.address, symbol: target.symbol, decimals: target.decimals, amount: swap.outputAmount, isNative: false, swapTx: swap.hash };
+  } catch (e) {
+    // The asset is already sold: what the wallet holds for this share is now ETH.
+    if (sellTx) e.soldForEth = { address: NATIVE_ETH, symbol: 'ETH', decimals: 18, amount: wei, isNative: true, swapTx: sellTx };
+    throw e;
+  }
 }
 
 /**
@@ -130,7 +136,8 @@ export async function runLeg({ config, privateKey, asset, amount, leg, cycleKey 
         out = await convertAsset({ config, privateKey, asset, amount, toToken: target });
       } catch (e) {
         if (leg.kind === 'burn') throw e;
-        note = `paid in kind, conversion skipped: ${e.shortMessage || e.message}`;
+        if (e.soldForEth) out = e.soldForEth;
+        note = `paid in ${e.soldForEth ? 'ETH' : 'kind'}, conversion skipped: ${e.shortMessage || e.message}`;
         console.log(`   ${leg.label}: ${note}`);
       }
     }
@@ -159,6 +166,7 @@ export async function runLeg({ config, privateKey, asset, amount, leg, cycleKey 
   } catch (e) {
     const failed = e.shortMessage || e.message;
     console.log(`   ${leg.label} leg failed: ${failed}`);
-    return { ...base, failed };
+    // spent: the share was already sold for ETH, so it is no longer there to fold into the dividend.
+    return { ...base, failed, spent: Boolean(e.soldForEth) };
   }
 }

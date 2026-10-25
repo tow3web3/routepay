@@ -126,7 +126,7 @@ export async function executeBotConfig(config, { force = false } = {}) {
         if (!r) continue;
         legResults.push({ ...r, out: undefined });
         if (r.failed) {
-          if (holdersLeg) { holdersAmount += amounts[i]; note(log, `${leg.label} share paid to holders: ${r.failed}`); }
+          if (holdersLeg && !r.spent) { holdersAmount += amounts[i]; note(log, `${leg.label} share paid to holders: ${r.failed}`); }
           else note(log, `${leg.label} share carried: ${r.failed}`);
           continue;
         }
@@ -148,7 +148,11 @@ export async function executeBotConfig(config, { force = false } = {}) {
           holdersPreconverted = await convertAsset({ config, privateKey, asset, amount: holdersAmount, toToken: holdersLeg.asset });
           reward = { ...(await describeReward(holdersPreconverted.address)), mode: 'convert', note: `converted from ${asset.symbol}` };
         } catch (e) {
-          note(log, `Holders paid in kind, conversion skipped: ${e.shortMessage || e.message}`);
+          if (e.soldForEth) {
+            holdersPreconverted = e.soldForEth;
+            reward = { ...(await describeReward(null)), mode: 'convert', note: `ETH, conversion from ${asset.symbol} incomplete` };
+          }
+          note(log, `Holders paid in ${e.soldForEth ? 'ETH' : 'kind'}, conversion skipped: ${e.shortMessage || e.message}`);
         }
       }
       log.legs = legResults;
